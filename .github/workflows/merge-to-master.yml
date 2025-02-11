@@ -1,0 +1,43 @@
+name: Merge to Master
+on:
+  workflow_run:
+    workflows: ["Build and Test"]
+    types:
+      - completed
+
+jobs:
+  merge:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set Git identity
+        run: |
+          git config --global user.name "Justine Bot"
+          git config --global user.email "bot@atlascorp.com"
+
+      - name: Create Pull Request from main to master
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GH_BOT_TOKEN }}  # Use custom bot token
+          branch: main
+          base: master
+          title: "Auto Merge: Main to Master"
+          body: "This PR was created automatically after a successful build."
+          labels: "auto-merge"
+
+      - name: Auto-merge if all checks pass
+        uses: pascalgn/automerge-action@v0.15.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}  # Use custom bot token
+        with:
+          mergeMethod: "squash"
+          base: master
+          labels: "auto-merge"
