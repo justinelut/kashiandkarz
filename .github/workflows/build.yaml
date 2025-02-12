@@ -1,0 +1,35 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main # Now triggers on master instead of main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      NEXT_PUBLIC_APPWRITE_ENDPOINT: ${{ secrets.NEXT_PUBLIC_APPWRITE_ENDPOINT }}
+      NEXT_PUBLIC_APPWRITE_PROJECT: ${{ secrets.NEXT_PUBLIC_APPWRITE_PROJECT }}
+      APPWRITE_DATABASE_ID: ${{ secrets.APPWRITE_DATABASE_ID }}
+      FUNDI_WANGU_BUCKET_ID: ${{ secrets.APPWRITE_BUCKET_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1.2.2
+        with:
+          bun-version: "latest"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile # Ensures consistency
+
+      - name: Build project
+        run: bun run build
+
+      # - name: Run tests
+      #   run: bun run test # If you have tests, otherwise remove this step
