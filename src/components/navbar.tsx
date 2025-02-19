@@ -1,95 +1,91 @@
 "use client";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Close menu when screen size changes to desktop
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMenuOpen(false);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Prevent scrolling when mobile menu is open
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isMenuOpen]);
-
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
-      <div className="container mx-auto">
-        <div className="flex h-16 md:h-20 items-center justify-between px-4">
-          <Link href="/" className="text-xl md:text-2xl font-bold text-primary">
-            KashiandKarz
-          </Link>
+    <header className="shadow-sm mb-2 bg-background">
+      <div className="relative flex max-w-screen-xl flex-col overflow-hidden px-4 py-4 md:mx-auto md:flex-row md:items-center">
+        <Link
+          href="/"
+          className="flex items-center whitespace-nowrap text-2xl font-black"
+        >
+          <span className="mr-2 text-4xl text-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              role="img"
+              width="1em"
+              height="1em"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M6.925 16.875Q5.2 16.225 4.1 14.713Q3 13.2 3 11.25q0-1.975.938-3.513Q4.875 6.2 6 5.15q1.125-1.05 2.062-1.6L9 3v2.475q0 .625.45 1.062q.45.438 1.075.438q.35 0 .65-.15q.3-.15.5-.425L12 6q.95.55 1.625 1.35t1.025 1.8l-1.675 1.675q-.05-.6-.287-1.175q-.238-.575-.638-1.05q-.35.2-.738.287q-.387.088-.787.088q-1.1 0-1.987-.612Q7.65 7.75 7.25 6.725q-.95.925-1.6 2.062Q5 9.925 5 11.25q0 .775.275 1.462q.275.688.75 1.213q.05-.5.287-.938q.238-.437.588-.787L9 10.1l2.15 2.1q.05.05.1.125t.1.125l-1.425 1.425q-.05-.075-.087-.125q-.038-.05-.088-.1L9 12.925l-.7.7q-.125.125-.212.287q-.088.163-.088.363q0 .3.175.537q.175.238.45.363ZM9 10.1Zm0 0ZM7.4 22L6 20.6L19.6 7L21 8.4L17.4 12H21v2h-5.6l-.5.5l1.5 1.5H21v2h-2.6l2.1 2.1l-1.4 1.4l-2.1-2.1V22h-2v-4.6l-1.5-1.5l-.5.5V22h-2v-3.6Z"
+              />
+            </svg>
+          </span>
+          <span className="text-foreground">KashiandKarz</span>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex md:gap-8">
-            {["Home", "Cars", "Blog", "Contact"].map((item) => (
-              <Link
-                key={item}
-                href="#"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                {item}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Toggle menu"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-5 right-7 md:hidden"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle Navigation"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
           >
-            {isMenuOpen ? (
-              <X className="h-6 w-6 text-gray-900" />
-            ) : (
-              <Menu className="h-6 w-6 text-gray-900" />
-            )}
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </Button>
 
-          {/* Get Started Button (Desktop) */}
-          <div className="hidden md:flex items-center gap-4">
-            <Button>Get Started</Button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="fixed inset-0 top-16 bg-white z-50 md:hidden">
-            <nav className="flex flex-col p-4 h-full">
-              {["Home", "Cars", "Blog", "Pages", "Contact"].map((item) => (
-                <Link
-                  key={item}
-                  href="#"
-                  className="py-3 text-lg font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item}
-                </Link>
-              ))}
-              <Button className="mt-4" onClick={() => setIsMenuOpen(false)}>
-                Get Started
+        <nav
+          aria-label="Header Navigation"
+          className={`
+            ${isMenuOpen ? "mt-8 max-h-56" : "max-h-0"}
+            flex w-full flex-col items-center justify-between overflow-hidden transition-all
+            md:ml-24 md:max-h-full md:flex-row md:items-start
+          `}
+        >
+          <ul className="flex flex-col items-center space-y-2 md:ml-auto md:flex-row md:space-y-0">
+            <li className="text-muted-foreground md:mr-12 hover:text-primary">
+              <Link href="/pricing">Pricing</Link>
+            </li>
+            <li className="text-muted-foreground md:mr-12 hover:text-primary">
+              <Link href="/features">Features</Link>
+            </li>
+            <li className="text-muted-foreground md:mr-12 hover:text-primary">
+              <Link href="/support">Support</Link>
+            </li>
+            <li className="md:mr-12">
+              <Button
+                variant="outline"
+                className="font-medium"
+                onClick={() => {
+                  /* Add login logic */
+                }}
+              >
+                Login
               </Button>
-            </nav>
-          </div>
-        )}
+            </li>
+          </ul>
+        </nav>
       </div>
     </header>
   );

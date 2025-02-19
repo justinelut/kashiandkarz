@@ -16,7 +16,7 @@ const MostSearched = () => {
   return (
     <section className="container mx-auto py-8 md:py-16">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold">The Most searched</h2>
+        <h2 className="text-2xl font-bold">Most searched</h2>
         <Button variant="link" className="self-start sm:self-center">
           View all
         </Button>
@@ -37,4 +37,3 @@ const MostSearched = () => {
 };
 
 export default MostSearched;
-
