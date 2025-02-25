@@ -1,15 +1,13 @@
-import CarBrands from "@/components/brands";
-import CallToAction from "@/components/callToAction";
-import HeroSection from "@/components/herosection";
-import MostSearched from "@/components/mostSearched";
+import BrowseInventory from "@/components/browse-inventory";
+import HeroSection from "@/components/hero-section";
+import HeroText from "@/components/hero-text";
 
 export default function Home() {
   return (
     <div>
       <HeroSection />
-      <MostSearched />
-      <CarBrands />
-      <CallToAction />
+      <HeroText />
+      <BrowseInventory />
     </div>
   );
 }

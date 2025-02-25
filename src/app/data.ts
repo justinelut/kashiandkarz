@@ -4,8 +4,9 @@ export interface CarProps {
   year: number;
   transmission: string;
   fuelType: string;
-  price: number;
+  price: string;
   imageUrl: string;
+  mileage: string;
 }
 
 export const MOCK_CARS: CarProps[] = [
@@ -15,9 +16,10 @@ export const MOCK_CARS: CarProps[] = [
     year: 2023,
     transmission: "Automatic",
     fuelType: "Petrol",
-    price: 85000,
+    price: "Ksh 85,000",
     imageUrl:
       "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=1000",
+    mileage: "12,000 kms",
   },
   {
     id: "2",
@@ -25,9 +27,10 @@ export const MOCK_CARS: CarProps[] = [
     year: 2023,
     transmission: "Automatic",
     fuelType: "Hybrid",
-    price: 92000,
+    price: "Ksh 92,000",
     imageUrl:
       "https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=1000",
+    mileage: "15,000 kms",
   },
   {
     id: "3",
@@ -35,9 +38,10 @@ export const MOCK_CARS: CarProps[] = [
     year: 2023,
     transmission: "Automatic",
     fuelType: "Diesel",
-    price: 89000,
+    price: "Ksh 89,000",
     imageUrl:
       "https://images.unsplash.com/photo-1614200179396-bc9160799ef9?q=80&w=1000",
+    mileage: "13,000 kms",
   },
   {
     id: "4",
@@ -45,9 +49,10 @@ export const MOCK_CARS: CarProps[] = [
     year: 2024,
     transmission: "Automatic",
     fuelType: "Hybrid",
-    price: 98000,
+    price: "Ksh 98,000",
     imageUrl:
       "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?q=80&w=1000",
+    mileage: "10,000 kms",
   },
   {
     id: "5",
@@ -55,9 +60,10 @@ export const MOCK_CARS: CarProps[] = [
     year: 2023,
     transmission: "Automatic",
     fuelType: "Petrol",
-    price: 95000,
+    price: "Ksh 95,000",
     imageUrl:
       "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000",
+    mileage: "11,000 kms",
   },
   {
     id: "6",
@@ -65,9 +71,10 @@ export const MOCK_CARS: CarProps[] = [
     year: 2024,
     transmission: "Automatic",
     fuelType: "Electric",
-    price: 89999,
+    price: "Ksh 89,999",
     imageUrl:
       "https://images.unsplash.com/photo-1566744394521-1c2f48120cdd?q=80&w=1000",
+    mileage: "5,000 kms",
   },
   {
     id: "7",
@@ -75,9 +82,10 @@ export const MOCK_CARS: CarProps[] = [
     year: 2023,
     transmission: "Automatic",
     fuelType: "Hybrid",
-    price: 75000,
+    price: "Ksh 75,000",
     imageUrl:
       "https://images.unsplash.com/photo-1698762366816-1e5125c08cf7?q=80&w=1000",
+    mileage: "14,000 kms",
   },
   {
     id: "8",
@@ -85,8 +93,9 @@ export const MOCK_CARS: CarProps[] = [
     year: 2024,
     transmission: "Automatic",
     fuelType: "Hybrid",
-    price: 82000,
+    price: "Ksh 82,000",
     imageUrl:
       "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1000",
+    mileage: "9,000 kms",
   },
 ];
