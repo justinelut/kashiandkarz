@@ -1,3 +1,4 @@
+import Brands from "@/components/brands";
 import BrowseInventory from "@/components/browse-inventory";
 import CallToAction from "@/components/CallToAction";
 import HeroSection from "@/components/hero-section";
@@ -10,6 +11,7 @@ export default function Home() {
       <HeroSection  />
       <HeroText />
       <BrowseInventory />
+      <Brands />
       <Testimonials />
       <CallToAction />
     </div>

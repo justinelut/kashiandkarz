@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,7 +13,7 @@ export default function ContactPage() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-950 mb-4">Contact Us</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We're here to help. Reach out to our team with any questions or inquiries.
+            We&apos;re here to help. Reach out to our team with any questions or inquiries.
           </p>
         </div>
         
