@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
         hostname: "appwrite.coolify.pixeldesign.site",
         port: "",
       },
+
+      {
+        protocol: "https",
+        hostname: "source.unsplash.com",
+        port: "",
+      },
     ],
   },
   typescript: {
