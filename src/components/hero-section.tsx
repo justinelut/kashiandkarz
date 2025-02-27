@@ -7,7 +7,7 @@ import { motion, useAnimation, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { ChevronDown, Search, ArrowRight, Calendar, Car } from "lucide-react";
 
-const HeroSection = () => {
+export const HeroSection = () => {
   const controls = useAnimation();
   const [activeCarIndex, setActiveCarIndex] = useState(0);
   
@@ -30,11 +30,11 @@ const HeroSection = () => {
     }
   ];
 
-  // Auto-rotate featured cars
+  // Auto-rotate featured cars with longer intervals
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveCarIndex((prev) => (prev + 1) % cars.length);
-    }, 5000);
+    }, 8000); // Increased from 5000 to 8000ms
     return () => clearInterval(interval);
   }, []);
 
@@ -67,7 +67,7 @@ const HeroSection = () => {
                 opacity: [0, 0.5, 0],
               }}
               transition={{
-                duration: Math.random() * 10 + 10,
+                duration: Math.random() * 20 + 20, // Doubled duration
                 repeat: Infinity,
                 repeatType: "loop",
               }}
@@ -76,14 +76,14 @@ const HeroSection = () => {
         </motion.div>
       </div>
 
-      {/* Car image with zoom and fade effect */}
+      {/* Car image with zoom and fade effect - slower transitions */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeCarIndex}
           initial={{ scale: 1.1, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: 2.4, ease: [0.25, 0.1, 0.25, 1] }} // Doubled from 1.2 to 2.4
           className="absolute inset-0 z-0"
         >
           <Image
@@ -93,64 +93,53 @@ const HeroSection = () => {
             className="object-cover"
             priority
           />
-          
-          {/* Creative overlays for better text readability */}
-          <motion.div 
-            className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-transparent"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-          />
-          
-          {/* Diagonal animated overlay */}
-          <motion.div 
-            className="absolute inset-0 overflow-hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <motion.div
-              className="absolute -inset-full bg-gradient-to-r from-primary/20 to-secondary/20"
-              style={{ transform: "rotate(-45deg)" }}
-              animate={{
-                x: ["-100%", "100%"],
-              }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                repeatType: "mirror",
-                ease: "linear"
-              }}
-            />
-          </motion.div>
-          
-          {/* Moving particle lines */}
-          <div className="absolute inset-0">
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent"
-                style={{ top: `${10 + i * 15}%` }}
-                animate={{
-                  x: ["-100%", "100%"],
-                }}
-                transition={{
-                  duration: 10 + i * 2,
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  ease: "linear",
-                  delay: i * 0.5,
-                }}
-              />
-            ))}
-          </div>
-          
-          {/* Bottom gradient for better text contrast */}
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
         </motion.div>
       </AnimatePresence>
+      
+      {/* Static dark overlay for consistent text visibility */}
+      <div className="absolute inset-0 bg-black/50 z-5"></div>
+      
+      {/* Permanent gradient overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-5"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-5"></div>
+      
+      {/* Slower diagonal animated overlay */}
+      <div className="absolute inset-0 overflow-hidden z-5">
+        <motion.div
+          className="absolute -inset-full bg-gradient-to-r from-primary/10 to-secondary/10"
+          style={{ transform: "rotate(-45deg)" }}
+          animate={{
+            x: ["-100%", "100%"],
+          }}
+          transition={{
+            duration: 30, // Triple duration from 15 to 30
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "linear"
+          }}
+        />
+      </div>
+      
+      {/* Slower moving particle lines */}
+      <div className="absolute inset-0 z-5">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute h-px w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent"
+            style={{ top: `${10 + i * 15}%` }}
+            animate={{
+              x: ["-100%", "100%"],
+            }}
+            transition={{
+              duration: 20 + i * 4, // Doubled from 10 to 20
+              repeat: Infinity,
+              repeatType: "loop",
+              ease: "linear",
+              delay: i * 0.5,
+            }}
+          />
+        ))}
+      </div>
       
       {/* Content container with responsive adjustments */}
       <div className="relative z-20 h-full w-full flex flex-col items-center px-4 sm:px-8">
@@ -175,92 +164,99 @@ const HeroSection = () => {
         
         {/* Main hero content with responsive layout */}
         <div className="flex flex-col md:flex-row w-full h-full mt-4 md:mt-0">
-          <div className="w-full md:w-1/2 flex flex-col justify-center items-start px-2 sm:px-4 md:pl-8 lg:pl-16 py-4 md:py-0">
-            {/* Animated heading with car model changing */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeCarIndex}
-                initial={{ x: -40, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: 40, opacity: 0 }}
-                transition={{ duration: 0.6 }}
-                className="mb-4 sm:mb-6"
-              >
-                <h2 className="text-white/70 text-base sm:text-xl mb-1 font-medium">Introducing</h2>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-2 sm:mb-3">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                    {cars[activeCarIndex].name}
-                  </span>
-                </h1>
-                <p className="text-xl sm:text-2xl md:text-3xl text-white/90 font-light">
-                  {cars[activeCarIndex].tagline}
-                </p>
-              </motion.div>
-            </AnimatePresence>
+          {/* Text content area with dedicated semi-transparent background for better readability */}
+          <div className="w-full md:w-1/2 flex flex-col justify-center items-start px-2 sm:px-4 md:pl-8 lg:pl-16 py-4 md:py-0 relative">
+            {/* Semi-transparent backdrop for text content on mobile */}
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-xl md:hidden"></div>
             
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="max-w-lg mb-6 sm:mb-10"
-            >
-              <p className="text-gray-300 text-base sm:text-lg">
-                Experience the pinnacle of automotive engineering with unprecedented performance, 
-                cutting-edge technology, and sustainable luxury.
-              </p>
-            </motion.div>
-            
-            {/* CTAs with mobile optimization */}
-            <div className="flex flex-col xs:flex-row gap-3 sm:gap-6 mb-6 sm:mb-10 w-full xs:w-auto">
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                className="w-full xs:w-auto"
-              >
-                <Button className="w-full xs:w-auto h-12 sm:h-14 px-6 sm:px-8 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium text-base sm:text-lg shadow-lg shadow-primary/20 flex gap-2 items-center justify-center">
-                  <span>Order Now</span>
-                  <motion.div
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
-                  </motion.div>
-                </Button>
-              </motion.div>
+            {/* Text content with better visibility */}
+            <div className="relative z-10 w-full">
+              {/* Animated heading with car model changing */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeCarIndex}
+                  initial={{ x: -40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 40, opacity: 0 }}
+                  transition={{ duration: 1.2 }} // Doubled from 0.6 to 1.2
+                  className="mb-4 sm:mb-6"
+                >
+                  <h2 className="text-white/90 text-base sm:text-xl mb-1 font-medium">Introducing</h2>
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-2 sm:mb-3">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                      {cars[activeCarIndex].name}
+                    </span>
+                  </h1>
+                  <p className="text-xl sm:text-2xl md:text-3xl text-white/90 font-light">
+                    {cars[activeCarIndex].tagline}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
               
               <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                className="w-full xs:w-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 1.6 }} // Doubled from 0.4/0.8 to 0.8/1.6
+                className="max-w-lg mb-6 sm:mb-10"
               >
-                <Button variant="outline" className="w-full xs:w-auto h-12 sm:h-14 px-6 sm:px-8 rounded-full border-2 border-white/30 bg-transparent backdrop-blur-sm text-white hover:bg-white/10 font-medium text-base sm:text-lg flex gap-2 items-center justify-center">
-                  <Calendar size={16} className="sm:w-[18px] sm:h-[18px]" />
-                  <span>Test Drive</span>
-                </Button>
+                <p className="text-gray-200 text-base sm:text-lg font-medium">
+                  Experience the pinnacle of automotive engineering with unprecedented performance, 
+                  cutting-edge technology, and sustainable luxury.
+                </p>
+              </motion.div>
+              
+              {/* CTAs with mobile optimization */}
+              <div className="flex flex-col xs:flex-row gap-3 sm:gap-6 mb-6 sm:mb-10 w-full xs:w-auto">
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  className="w-full xs:w-auto"
+                >
+                  <Button className="w-full xs:w-auto h-12 sm:h-14 px-6 sm:px-8 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium text-base sm:text-lg shadow-lg shadow-primary/20 flex gap-2 items-center justify-center">
+                    <span>Order Now</span>
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 3, repeat: Infinity }} // Doubled from 1.5 to 3
+                    >
+                      <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
+                    </motion.div>
+                  </Button>
+                </motion.div>
+                
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  className="w-full xs:w-auto"
+                >
+                  <Button variant="outline" className="w-full xs:w-auto h-12 sm:h-14 px-6 sm:px-8 rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 font-medium text-base sm:text-lg flex gap-2 items-center justify-center">
+                    <Calendar size={16} className="sm:w-[18px] sm:h-[18px]" />
+                    <span>Test Drive</span>
+                  </Button>
+                </motion.div>
+              </div>
+              
+              {/* Car selector dots */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.6, duration: 1 }} // Doubled from 0.8 to 1.6
+                className="flex gap-3 mt-2 sm:mt-4"
+              >
+                {cars.map((_, index) => (
+                  <motion.button
+                    key={index}
+                    className={`h-2 rounded-full ${
+                      index === activeCarIndex ? "w-6 sm:w-8 bg-primary" : "w-2 bg-white/30"
+                    }`}
+                    onClick={() => setActiveCarIndex(index)}
+                    whileHover={{ scale: 1.2 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                ))}
               </motion.div>
             </div>
-            
-            {/* Car selector dots */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="flex gap-3 mt-2 sm:mt-4"
-            >
-              {cars.map((_, index) => (
-                <motion.button
-                  key={index}
-                  className={`h-2 rounded-full ${
-                    index === activeCarIndex ? "w-6 sm:w-8 bg-primary" : "w-2 bg-white/30"
-                  }`}
-                  onClick={() => setActiveCarIndex(index)}
-                  whileHover={{ scale: 1.2 }}
-                  transition={{ duration: 0.2 }}
-                />
-              ))}
-            </motion.div>
           </div>
             
           {/* Search and explore section with mobile optimization */}
@@ -268,14 +264,14 @@ const HeroSection = () => {
             <motion.div
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
+              transition={{ delay: 1.2, duration: 1.6 }} // Fixed typo from "l.6" to "1.6"
               className="w-full max-w-md px-2 sm:px-0"
             >
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl">
+              <div className="backdrop-blur-xl bg-black/40 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl">
                 <motion.h3
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.7, duration: 0.5 }}
+                  transition={{ delay: 1.4, duration: 1 }} // Doubled from 0.7/0.5 to 1.4/1
                   className="text-xl sm:text-2xl font-medium text-white mb-4 sm:mb-6"
                 >
                   Find Your Perfect Match
@@ -293,7 +289,7 @@ const HeroSection = () => {
                       <Input 
                         id="search" 
                         placeholder="Type a model or feature..." 
-                        className="h-10 sm:h-12 pl-9 sm:pl-10 bg-white/5 border-white/10 rounded-lg sm:rounded-xl text-white focus:ring-primary focus:border-primary transition-all duration-300"
+                        className="h-10 sm:h-12 pl-9 sm:pl-10 bg-white/10 border-white/10 rounded-lg sm:rounded-xl text-white focus:ring-primary focus:border-primary transition-all duration-300"
                       />
                     </div>
                   </motion.div>
@@ -307,7 +303,7 @@ const HeroSection = () => {
                       <Input 
                         id="price" 
                         placeholder="Any price" 
-                        className="h-10 sm:h-12 bg-white/5 border-white/10 rounded-lg sm:rounded-xl text-white focus:ring-primary focus:border-primary transition-all duration-300" 
+                        className="h-10 sm:h-12 bg-white/10 border-white/10 rounded-lg sm:rounded-xl text-white focus:ring-primary focus:border-primary transition-all duration-300" 
                       />
                     </motion.div>
                     
@@ -319,7 +315,7 @@ const HeroSection = () => {
                       <Input 
                         id="type" 
                         placeholder="All types" 
-                        className="h-10 sm:h-12 bg-white/5 border-white/10 rounded-lg sm:rounded-xl text-white focus:ring-primary focus:border-primary transition-all duration-300" 
+                        className="h-10 sm:h-12 bg-white/10 border-white/10 rounded-lg sm:rounded-xl text-white focus:ring-primary focus:border-primary transition-all duration-300" 
                       />
                     </motion.div>
                   </div>
@@ -337,7 +333,7 @@ const HeroSection = () => {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1 }}
+                    transition={{ delay: 2, duration: 1 }} // Doubled from 1 to 2
                     className="flex justify-center mt-1 sm:mt-2"
                   >
                     <span className="text-white/50 text-xs sm:text-sm">Or explore our </span>
@@ -353,12 +349,12 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
+          transition={{ delay: 3, duration: 2 }} // Doubled from 1.5/1 to 3/2
           className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            transition={{ duration: 4, repeat: Infinity }} // Doubled from 2 to 4
             className="flex flex-col items-center cursor-pointer"
           >
             <span className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">Explore Models</span>
