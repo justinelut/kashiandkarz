@@ -1,4 +1,4 @@
-import CarBrandsCarousel from "@/components/brands";
+import CarBrandsCarousel from "@/components/brands-carousel";
 import BrowseInventory from "@/components/browse-inventory";
 import CallToAction from "@/components/CallToAction";
 import HeroText from "@/components/hero-text";
