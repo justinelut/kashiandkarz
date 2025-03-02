@@ -12,7 +12,7 @@ export default function Home() {
       <HeroText />
       <BrowseInventory />
       <Testimonials />
-      <CallToAction />
+      {/* <CallToAction /> */}
       <CarBrandsCarousel />
     </div>
   );

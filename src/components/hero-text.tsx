@@ -6,7 +6,7 @@ const HeroText = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center my-10">
       <div className="max-w-2xl mx-auto text-center">
-        <h1 className="text-4xl md:text-6xl font-bold text-gray-50 mb-6">
+        <h1 className="text-2xl md:text-4xl font-semibold text-gray-50 mb-6">
           Find Your Perfect Drive
         </h1>
         <p className="text-xl text-gray-200 mb-8">

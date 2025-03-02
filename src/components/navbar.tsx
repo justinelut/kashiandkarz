@@ -42,7 +42,7 @@ export default function Navbar() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DropdownMenu>
+      {/* <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-1 font-normal">
             Bikes <ChevronDown className="h-4 w-4" />
@@ -53,23 +53,23 @@ export default function Navbar() {
           <DropdownMenuItem>Mountain Bikes</DropdownMenuItem>
           <DropdownMenuItem>Electric Bikes</DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> */}
 
       <Link href="/sell" className="text-sm font-normal">
-        Sell Your Car
+       About
       </Link>
 
       <Link href="/about" className="text-sm font-normal">
-        About
+        Sell Your Car
       </Link>
 
       <Link href="/contact" className="text-sm font-normal">
         Contact
       </Link>
 
-      <Link href="/faq" className="text-sm font-normal">
+      {/* <Link href="/faq" className="text-sm font-normal">
         FAQ
-      </Link>
+      </Link> */}
     </>
   )
 
