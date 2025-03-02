@@ -5,29 +5,27 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 
 const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"]
-})
+	variable: "--font-montserrat",
+	subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "KashiandKarz",
-  description: "Get your car today",
+	title: "KashiandKarz",
+	description: "Get your car today",
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en" suppressHydrationWarning={true}>
-      <body
-        className={`antialiased ${montserrat.variable}`}
-      >
-       
-        {children}
-        <Footer />
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en" suppressHydrationWarning={true}>
+			<body className={`antialiased ${montserrat.variable}`}>
+				<Navbar />
+				{children}
+				<Footer />
+			</body>
+		</html>
+	);
 }
