@@ -51,7 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           },
           {
             title: "Add Car",
-            url: "/cars/new",
+            url: "/dashboard/cars/new",
           },
         ],
       },
