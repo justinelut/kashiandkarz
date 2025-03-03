@@ -1,17 +1,19 @@
+import CarBrandsCarousel from "@/components/brands-carousel";
 import BrowseInventory from "@/components/browse-inventory";
 import CallToAction from "@/components/CallToAction";
-import HeroSection from "@/components/hero-section";
 import HeroText from "@/components/hero-text";
+import HeroWithNavbar from "@/components/hero-section";
 import Testimonials from "@/components/testimonials";
 
 export default function Home() {
   return (
     <div>
-      <HeroSection  />
+      <HeroWithNavbar />
       <HeroText />
       <BrowseInventory />
       <Testimonials />
-      <CallToAction />
+      {/* <CallToAction /> */}
+      <CarBrandsCarousel />
     </div>
   );
 }
