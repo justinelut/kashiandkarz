@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -25,7 +27,7 @@ export default function AboutPage() {
               We believed that purchasing a pre-owned vehicle should be just as exciting and confidence-inspiring as buying new.
             </p>
             <p className="text-gray-600 mb-4">
-              What started as a small dealership with just 15 cars has grown into one of the region's most trusted 
+              What started as a small dealership with just 15 cars has grown into one of the region&apos;s most trusted 
               automotive retailers, with hundreds of premium vehicles and thousands of satisfied customers.
             </p>
             <p className="text-gray-600 mb-6">
