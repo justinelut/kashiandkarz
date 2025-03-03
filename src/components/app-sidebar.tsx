@@ -41,17 +41,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     navMain: [
       {
-        title: "Inventory",
-        url: "/inventory",
+        title: "My cars",
+        url: "/dashboard/cars",
         icon: Car,
         items: [
           {
             title: "All Cars",
-            url: "/inventory/all",
+            url: "/dashboard/cars",
           },
           {
             title: "Add Car",
-            url: "/inventory/add",
+            url: "/cars/new",
           },
         ],
       },
