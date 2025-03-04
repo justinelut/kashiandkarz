@@ -1,6 +1,4 @@
 "use server"
-
-import axios from "axios"
 import { revalidatePath } from "next/cache"
 import { Databases, ID, Client } from "node-appwrite"
 
@@ -15,57 +13,63 @@ const database = new Databases(client)
 interface CarMake {
   name: string
   slug: string
-  image: string
+  image: {
+    optimized?: string
+    thumb?: string
+    source?: string
+  }
 }
 
 interface BasicCarInfo {
-  makeId: string
+  make_id: string
+  make_name?: string
+  make_image?: string
   model: string
   year: string
-  vehicleType: string
+  vehicle_type: string
   condition: string
 }
 
 interface CarSpecifications {
-  fuelType: string
-  transmissionType: string
+  fuel_type: string
+  transmission_type: string
   drivetrain: string
-  engineCapacity: string
+  engine_capacity: string
   horsepower: string
   torque: string
   mileage?: string
-  mileageUnit: "km" | "miles"
+  mileage_unit: "km" | "miles"
 }
 
 interface CarFeatures {
-  exteriorFeatures?: string[]
-  interiorFeatures?: string[]
-  safetyFeatures?: string[]
+  exterior_features?: string[]
+  interior_features?: string[]
+  safety_features?: string[]
 }
 
 interface OwnershipDocumentation {
   vin: string
-  registrationNumber: string
-  logbookAvailability: "yes" | "no"
-  previousOwners: string
-  insuranceStatus: "valid" | "expired" | "none"
+  registration_number: string
+  logbook_availability: "yes" | "no"
+  previous_owners: string
+  insurance_status: "valid" | "expired" | "none"
 }
 
 interface PricingPayment {
-  sellingPrice: string
+  selling_price: string
   currency: string
   negotiable: "yes" | "no"
-  installmentPlans: "yes" | "no"
-  paymentMethods: string[]
+  installment_plans: "yes" | "no"
+  payment_methods: string[]
 }
 
 interface PhotoVideo {
-  frontView: File
-  rearView: File
-  leftSideView: File
-  rightSideView: File
-  interiorPhotos: File[]
-  engineBayPhoto: File
+  front_view: File
+  rear_view: File
+  left_side_view: File
+  right_side_view: File
+  interior_photos: File[]
+  engine_bay_photo: File
   video?: File
 }
 
@@ -110,7 +114,7 @@ export async function saveBasicCarInfo(data: BasicCarInfo) {
       data
     )
     revalidatePath("/dashboard/cars/new")
-    return { success: true, data: carInfo }
+    return { success: true, carId: carInfo.$id }
   } catch (error) {
     console.error("Error saving car info:", error)
     return { success: false, error: "Failed to save car info" }
@@ -199,49 +203,38 @@ export async function savePhotoVideo(data: PhotoVideo, carId: string) {
   }
 }
 
-
-const rapidApiKey = process.env.RAPID_API_KEY as string
+const apiKey = process.env.RAPID_API_KEY as string
 
 //get car models
-
 export const fetchCarModels = async (make: string, searchQuery: string) => {
-   // Store API key in environment variables
-
-  if (!rapidApiKey) {
-    throw new Error("RapidAPI Key not found");
+  if (!apiKey) {
+    throw new Error('API Key not found')
   }
-  if (!make || searchQuery.length < 2) return [];
+  if (!make || searchQuery.length < 2) return []
 
   try {
-    console.log("Make:", make);
-    console.log("Search Query:", searchQuery);
-    console.log("Using RapidAPI Key:", rapidApiKey);
+    const url = `https://car-data.p.rapidapi.com/cars?model=${searchQuery.toLowerCase()}&limit=10`
 
-    const response = await fetch(
-      `https://cars-by-api-ninjas.p.rapidapi.com/v1/cars?model=corolla`,
-      {
-        method: "GET",
-        headers: {
-          "X-RapidAPI-Key": rapidApiKey,
-          "X-RapidAPI-Host": "cars-by-api-ninjas.p.rapidapi.com",
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': apiKey,
+        'x-rapidapi-host': 'car-data.p.rapidapi.com',
+        'Content-Type': 'application/json',
+      },
+    })
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Error Response:", errorData);
-      throw new Error(`API Error: ${response.status} - ${errorData.message || "Unknown error"}`);
+      const errorData = await response.json()
+      throw new Error(`API Error: ${response.status} - ${errorData.message || 'Unknown error'}`)
     }
 
-    const data = await response.json();
-    console.log("Response Data:", data);
+    const data = await response.json()
 
     // Remove duplicates by model name
-    return Array.from(new Map(data.map((car) => [car.model, car])).values());
-  } catch (error: any) {
-    console.error("Error fetching car models:", error.message);
-    return [];
+    return Array.from(new Map(data.map((car: any) => [car.model, car])).values())
+  } catch (error) {
+    console.error('Error fetching car models:', error)
+    return []
   }
-};
+}

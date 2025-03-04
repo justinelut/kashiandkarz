@@ -1,75 +1,104 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { fetchCarModels } from "@/lib/actions";
+import { CommandInput } from "@/components/ui/command"
 
-// API Key from environment variable
+import { useState, useEffect } from "react"
+import axios from "axios"
+import { Check, ChevronsUpDown, Search } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
+// import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
-
-// Car Model Interface
-interface CarModel {
-  make: string;
-  model: string;
-  year: number;
-  type: string;
-  fuel_type: string;
-  transmission: string;
-  drivetrain: string;
-  engine: string;
-  horsepower: number;
-  torque: number;
-  weight?: number;
-  doors?: number;
-  mpg_city?: number;
-  mpg_highway?: number;
-  combined_mpg?: number;
-}
+// Replace with your actual API key
+const API_KEY = process.env.NEXT_PUBLIC_API_NINJA_KEY || ""
 
 interface CarModelSelectorProps {
-  make: string;
-  onSelect: (model: string, carDetails?: CarModel) => void;
-  defaultValue?: string;
+  make: string
+  onSelect: (model: string, carDetails?: any) => void
+  defaultValue?: string
 }
 
-// Fetch Function for API Request
-
+interface CarModel {
+  make: string
+  model: string
+  year: number
+  type: string
+  fuel_type: string
+  transmission: string
+  drivetrain: string
+  engine: string
+  horsepower: number
+  torque: number
+  weight?: number
+  doors?: number
+  mpg_city?: number
+  mpg_highway?: number
+  combined_mpg?: number
+}
 
 export function CarModelSelector({ make, onSelect, defaultValue }: CarModelSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(defaultValue || "");
-  const [selectedModel, setSelectedModel] = useState<string | null>(defaultValue || null);
+  const [open, setOpen] = useState(false)
+  const [inputValue, setInputValue] = useState("")
+  const [selectedModel, setSelectedModel] = useState<string | null>(null)
+  const [models, setModels] = useState<CarModel[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // Fetch car models using useQuery
-  const { data: models = [], isLoading, error } = useQuery({
-    queryKey: ["carModels", make, inputValue],
-    queryFn: () => fetchCarModels(make, inputValue),
-    enabled: !!make && inputValue.length >= 2, // Only run if make is selected and input has at least 2 chars
-  });
+  // Initialize with default value if provided
+  useEffect(() => {
+    if (defaultValue) {
+      setSelectedModel(defaultValue)
+      setInputValue(defaultValue)
+    }
+  }, [defaultValue])
 
-  console.log(models)
+  // Fetch models when make changes or input value changes
+  useEffect(() => {
+    const fetchModels = async () => {
+      if (!make || inputValue.length < 2) {
+        setModels([])
+        return
+      }
+
+      setLoading(true)
+      setError(null)
+
+      try {
+        const response = await axios.get(
+          `https://api.api-ninjas.com/v1/cars?make=${make}&model=${inputValue}&limit=10`,
+          { headers: { "X-Api-Key": API_KEY } },
+        )
+
+        // Group by model name to avoid duplicates
+        const uniqueModels = Array.from(new Map(response.data.map((car: CarModel) => [car.model, car])).values())
+
+        setModels(uniqueModels)
+      } catch (error) {
+        console.error("Error fetching models:", error)
+        setError("Failed to fetch car models. Please try again.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    // Debounce the API call
+    const timeoutId = setTimeout(() => {
+      if (make) fetchModels()
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [make, inputValue])
 
   // Handle selecting a model
   const handleSelectModel = (model: string) => {
-    setSelectedModel(model);
-    const selectedCarDetails = models.find((car) => car.model === model);
-    onSelect(model, selectedCarDetails);
-    setOpen(false);
-  };
+    setSelectedModel(model)
+    const selectedCarDetails = models.find((car) => car.model === model)
+    onSelect(model, selectedCarDetails)
+    setOpen(false)
+  }
 
   return (
     <div className="flex flex-col gap-1">
@@ -97,8 +126,8 @@ export function CarModelSelector({ make, onSelect, defaultValue }: CarModelSelec
               />
             </div>
             <CommandList>
-              {isLoading && "Loading models..."}
-              <CommandEmpty>{error ? "Failed to fetch car models. Please try again." : "No models found."}</CommandEmpty>
+              {loading && 'Loading models...'}
+              <CommandEmpty>{error ? error : "No models found. Try a different search."}</CommandEmpty>
               <ScrollArea className="h-[300px]">
                 <CommandGroup>
                   {models.map((car) => (
@@ -126,5 +155,6 @@ export function CarModelSelector({ make, onSelect, defaultValue }: CarModelSelec
       </Popover>
       {!make && <p className="text-xs text-muted-foreground">Please select a car make first</p>}
     </div>
-  );
+  )
 }
+

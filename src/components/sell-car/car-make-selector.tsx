@@ -15,21 +15,15 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import carMakes from "@/lib/data.json"; // Import as a JSON array
+import carMakes from "@/lib/data.json";
 import { useCarStore } from "@/store/car-store";
+import { saveCarMake } from "@/lib/actions";
+import { toast } from "sonner";
 
 interface CarMake {
   name: string;
   slug: string;
-  image: {
-    source?: string;
-    thumb?: string;
-    optimized?: string;
-    original?: string;
-    localThumb?: string;
-    localOptimized?: string;
-    localOriginal?: string;
-  };
+  image: string;
 }
 
 interface CarMakeSelectorProps {
@@ -42,6 +36,7 @@ export function CarMakeSelector({ onSelect, defaultValue }: CarMakeSelectorProps
   const [makes, setMakes] = useState<CarMake[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Zustand state
   const selected_make = useCarStore((state) => state.selected_make);
@@ -63,6 +58,7 @@ export function CarMakeSelector({ onSelect, defaultValue }: CarMakeSelectorProps
       }
     } catch (error) {
       console.error("Error loading car makes:", error);
+      toast.error("Failed to load car makes");
     } finally {
       setLoading(false);
     }
@@ -73,6 +69,39 @@ export function CarMakeSelector({ onSelect, defaultValue }: CarMakeSelectorProps
     ? makes.filter((make) => make.name.toLowerCase().includes(searchQuery.toLowerCase()))
     : makes;
 
+  // Handle make selection
+  const handleMakeSelection = async (make: CarMake) => {
+    try {
+      setSaving(true);
+      // First save the make to get an ID
+      const result = await saveCarMake({
+        name: make.name,
+        slug: make.slug,
+        image: make.image.thumb || "",
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save car make");
+      }
+
+      // Update the make with the new ID from the database
+      const savedMake = {
+        ...make,
+        $id: result.data.$id, // Add the database ID
+      };
+
+      setSelectedMake(savedMake);
+      onSelect(savedMake);
+      setOpen(false);
+      toast.success("Car make selected successfully");
+    } catch (error) {
+      console.error("Error saving car make:", error);
+      toast.error("Failed to save car make");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -81,6 +110,7 @@ export function CarMakeSelector({ onSelect, defaultValue }: CarMakeSelectorProps
           role="combobox"
           aria-expanded={open}
           className="h-11 w-full justify-between rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+          disabled={saving}
         >
           {selected_make ? (
             <div className="flex items-center gap-2">
@@ -123,11 +153,8 @@ export function CarMakeSelector({ onSelect, defaultValue }: CarMakeSelectorProps
                   <CommandItem
                     key={make.slug}
                     value={make.name}
-                    onSelect={() => {
-                      setSelectedMake(make);
-                      onSelect(make);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleMakeSelection(make)}
+                    disabled={saving}
                   >
                     <div className="flex items-center gap-2">
                       <div className="relative h-6 w-6 overflow-hidden rounded-sm">
