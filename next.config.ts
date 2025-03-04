@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
 			},
 			{
 				protocol: "https",
+				hostname: "raw.githubusercontent.com",
+				port: "",
+			},
+			{
+				protocol: "https",
 				hostname: "logo.clearbit.com",
 				port: "",
 			},

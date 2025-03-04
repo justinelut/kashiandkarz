@@ -1,4 +1,5 @@
 "use client"
+
 import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -12,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveBasicCarInfo } from "@/lib/actions"
+import { CarMakeSelector } from "./car-make-selector"
 
 const currentYear = new Date().getFullYear()
 const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i)
@@ -34,7 +36,7 @@ const vehicleTypes = [
 const conditions = ["Brand New", "Used", "Certified Pre-Owned"]
 
 const formSchema = z.object({
-  make: z.string().min(1, "Make is required"),
+  carMakeId: z.string().min(1, "Car make is required"),
   model: z.string().min(1, "Model is required"),
   year: z.string().min(1, "Year is required"),
   vehicleType: z.string().min(1, "Vehicle type is required"),
@@ -49,7 +51,7 @@ export default function BasicCarInfoForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      make: "",
+      carMakeId: "",
       model: "",
       year: "",
       vehicleType: "",
@@ -62,7 +64,7 @@ export default function BasicCarInfoForm() {
       await saveBasicCarInfo(data)
     },
     onSuccess: () => {
-      router.push("/sell-car/step-2")
+      router.push("/dashboard/cars/new/car-specification")
     },
   })
 
@@ -87,15 +89,17 @@ export default function BasicCarInfoForm() {
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="make"
+                name="carMakeId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel className="text-base">Make (Brand)</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g. Toyota, Honda, Mercedes-Benz"
-                        className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                        {...field}
+                      <CarMakeSelector 
+                        onSelect={(make) => {
+                          if (make?.id) {
+                            field.onChange(make.id)
+                          }
+                        }} 
                       />
                     </FormControl>
                     <FormMessage />
@@ -199,19 +203,22 @@ export default function BasicCarInfoForm() {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-between border-t bg-muted/20 px-6 py-4">
-        <Button variant="outline" disabled>
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="gap-2"
+        >
           Back
         </Button>
         <Button
           onClick={form.handleSubmit(onSubmit)}
           disabled={isPending}
-          className="gap-2 bg-primary px-6 text-primary-foreground hover:bg-primary/90"
+          className="gap-2"
         >
-          {isPending ? "Saving..." : "Continue"}
-          {!isPending && <ChevronRight className="h-4 w-4" />}
+          Next Step
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
   )
 }
-

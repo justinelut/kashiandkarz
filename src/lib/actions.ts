@@ -1,102 +1,199 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { Databases, ID, Client } from "node-appwrite"
+
+// Initialize Appwrite client
+const client = new Client()
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!)
+  .setKey(process.env.APPWRITE_API_KEY!) // Use server-side API key
+
+const database = new Databases(client)
+
+interface CarMake {
+  name: string
+  slug: string
+  image: string
+}
 
 interface BasicCarInfo {
-  make: string
+  makeId: string
   model: string
   year: string
-  "vehicle-type": string
+  vehicleType: string
   condition: string
 }
 
 interface CarSpecifications {
-  "fuel-type": string
-  "transmission-type": string
+  fuelType: string
+  transmissionType: string
   drivetrain: string
-  "engine-capacity": string
+  engineCapacity: string
   horsepower: string
   torque: string
   mileage?: string
-  "mileage-unit": "km" | "miles"
+  mileageUnit: "km" | "miles"
 }
 
 interface CarFeatures {
-  "exterior-features"?: string[]
-  "interior-features"?: string[]
-  "safety-features"?: string[]
+  exteriorFeatures?: string[]
+  interiorFeatures?: string[]
+  safetyFeatures?: string[]
 }
 
 interface OwnershipDocumentation {
   vin: string
-  "registration-number": string
-  "logbook-availability": "yes" | "no"
-  "previous-owners": string
-  "insurance-status": "valid" | "expired" | "none"
+  registrationNumber: string
+  logbookAvailability: "yes" | "no"
+  previousOwners: string
+  insuranceStatus: "valid" | "expired" | "none"
 }
 
 interface PricingPayment {
-  "selling-price": string
+  sellingPrice: string
   currency: string
   negotiable: "yes" | "no"
-  "installment-plans": "yes" | "no"
-  "payment-methods": string[]
+  installmentPlans: "yes" | "no"
+  paymentMethods: string[]
 }
 
 interface PhotoVideo {
-  "front-view": File
-  "rear-view": File
-  "left-side-view": File
-  "right-side-view": File
-  "interior-photos": File[]
-  "engine-bay-photo": File
+  frontView: File
+  rearView: File
+  leftSideView: File
+  rightSideView: File
+  interiorPhotos: File[]
+  engineBayPhoto: File
   video?: File
 }
 
+export async function saveCarMake(data: CarMake) {
+  try {
+    const make = await database.createDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CAR_MAKES_COLLECTION_ID!,
+      ID.unique(),
+      {
+        name: data.name,
+        slug: data.slug,
+        image: data.image
+      }
+    )
+    return { success: true, data: make }
+  } catch (error) {
+    console.error("Error saving car make:", error)
+    return { success: false, error: "Failed to save car make" }
+  }
+}
+
+export async function getCarMakes() {
+  try {
+    const makes = await database.listDocuments(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CAR_MAKES_COLLECTION_ID!
+    )
+    return { success: true, data: makes.documents }
+  } catch (error) {
+    console.error("Error fetching car makes:", error)
+    return { success: false, error: "Failed to fetch car makes" }
+  }
+}
+
 export async function saveBasicCarInfo(data: BasicCarInfo) {
-  // Simulate a delay to show loading state
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-
-  // In a real application, you would save this data to a database
-  console.log("Saving car info:", data)
-
-  revalidatePath("/sell-car")
-
-  return { success: true }
+  try {
+    const carInfo = await database.createDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+      ID.unique(),
+      data
+    )
+    revalidatePath("/dashboard/cars/new")
+    return { success: true, data: carInfo }
+  } catch (error) {
+    console.error("Error saving car info:", error)
+    return { success: false, error: "Failed to save car info" }
+  }
 }
 
-export async function saveCarSpecifications(data: CarSpecifications) {
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  console.log("Saving car specifications:", data)
-  revalidatePath("/sell-car/step-2")
-  return { success: true }
+export async function saveCarSpecifications(data: CarSpecifications, carId: string) {
+  try {
+    const specs = await database.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+      carId,
+      data
+    )
+    revalidatePath("/dashboard/cars/new/car-specification")
+    return { success: true, data: specs }
+  } catch (error) {
+    console.error("Error saving car specifications:", error)
+    return { success: false, error: "Failed to save car specifications" }
+  }
 }
 
-export async function saveCarFeatures(data: CarFeatures) {
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  console.log("Saving car features:", data)
-  revalidatePath("/sell-car/step-3")
-  return { success: true }
+export async function saveCarFeatures(data: CarFeatures, carId: string) {
+  try {
+    const features = await database.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+      carId,
+      data
+    )
+    revalidatePath("/dashboard/cars/new/car-features")
+    return { success: true, data: features }
+  } catch (error) {
+    console.error("Error saving car features:", error)
+    return { success: false, error: "Failed to save car features" }
+  }
 }
 
-export async function saveOwnershipDocumentation(data: OwnershipDocumentation) {
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  console.log("Saving ownership documentation:", data)
-  revalidatePath("/sell-car/step-4")
-  return { success: true }
+export async function saveOwnershipDocumentation(data: OwnershipDocumentation, carId: string) {
+  try {
+    const docs = await database.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+      carId,
+      data
+    )
+    revalidatePath("/dashboard/cars/new/ownership")
+    return { success: true, data: docs }
+  } catch (error) {
+    console.error("Error saving ownership documentation:", error)
+    return { success: false, error: "Failed to save ownership documentation" }
+  }
 }
 
-export async function savePricingPayment(data: PricingPayment) {
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  console.log("Saving pricing and payment options:", data)
-  revalidatePath("/sell-car/step-5")
-  return { success: true }
+export async function savePricingPayment(data: PricingPayment, carId: string) {
+  try {
+    const pricing = await database.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+      carId,
+      data
+    )
+    revalidatePath("/dashboard/cars/new/pricing")
+    return { success: true, data: pricing }
+  } catch (error) {
+    console.error("Error saving pricing and payment options:", error)
+    return { success: false, error: "Failed to save pricing and payment options" }
+  }
 }
 
-export async function savePhotoVideo(data: PhotoVideo) {
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  console.log("Saving photo and video data:", data)
-  revalidatePath("/sell-car/step-6")
-  return { success: true }
+export async function savePhotoVideo(data: PhotoVideo, carId: string) {
+  try {
+    // Here you would first upload the files to storage and get their IDs
+    // Then save the file IDs to the car document
+    const photos = await database.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+      carId,
+      data
+    )
+    revalidatePath("/dashboard/cars/new/photos")
+    return { success: true, data: photos }
+  } catch (error) {
+    console.error("Error saving photo and video data:", error)
+    return { success: false, error: "Failed to save photo and video data" }
+  }
 }
-
