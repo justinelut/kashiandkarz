@@ -42,7 +42,7 @@ export default function DashboardLayout({
             </Breadcrumb>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 mx-auto container">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

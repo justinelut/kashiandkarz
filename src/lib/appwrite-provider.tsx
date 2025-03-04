@@ -126,7 +126,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         await account.createEmailPasswordSession(email, password);
         const userData = await account.get();
-        console.log(userData);
         await saveSession(userData);
         return userData;
       } catch (error: any) {
