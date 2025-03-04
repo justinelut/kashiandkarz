@@ -4,16 +4,20 @@ import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useState, useEffect } from "react"
 import { z } from "zod"
 import { CarIcon, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveBasicCarInfo } from "@/lib/actions"
 import { CarMakeSelector } from "./car-make-selector"
+import { CarModelSelector } from "./car-model-selector"
+import { CarDetailsPreview } from "./car-details-preview"
+import { useToast } from "@/components/ui/use-toast"
+import { useCarStore } from "@/lib/store/car-store"
 
 const currentYear = new Date().getFullYear()
 const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i)
@@ -36,7 +40,7 @@ const vehicleTypes = [
 const conditions = ["Brand New", "Used", "Certified Pre-Owned"]
 
 const formSchema = z.object({
-  carMakeId: z.string().min(1, "Car make is required"),
+  makeId: z.string().min(1, "Make is required"),
   model: z.string().min(1, "Model is required"),
   year: z.string().min(1, "Year is required"),
   vehicleType: z.string().min(1, "Vehicle type is required"),
@@ -47,24 +51,103 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function BasicCarInfoForm() {
   const router = useRouter()
+  const { toast } = useToast()
+  const [carDetails, setCarDetails] = useState<any>(null)
+
+  // Zustand store
+  const selectedMake = useCarStore((state) => state.selectedMake)
+  const setCarId = useCarStore((state) => state.setCarId)
+  const setApiData = useCarStore((state) => state.setApiData)
+  const setBasicInfo = useCarStore((state) => state.setBasicInfo)
+  const basicInfo = useCarStore((state) => state.basicInfo)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      carMakeId: "",
-      model: "",
-      year: "",
-      vehicleType: "",
-      condition: "",
+      makeId: basicInfo?.makeId || "",
+      model: basicInfo?.model || "",
+      year: basicInfo?.year || "",
+      vehicleType: basicInfo?.vehicleType || "",
+      condition: basicInfo?.condition || "",
     },
   })
 
+  // Auto-fill form when car details are available
+  useEffect(() => {
+    if (carDetails) {
+      form.setValue("year", carDetails.year.toString())
+      form.setValue("vehicleType", carDetails.type || "")
+
+      // If the vehicle type from API doesn't match our options, set to "Other"
+      if (!vehicleTypes.includes(carDetails.type)) {
+        form.setValue("vehicleType", "Other")
+      }
+    }
+  }, [carDetails, form])
+
+  // Pre-fill form with data from store if available
+  useEffect(() => {
+    if (basicInfo) {
+      form.setValue("makeId", basicInfo.makeId)
+      form.setValue("model", basicInfo.model)
+      form.setValue("year", basicInfo.year)
+      form.setValue("vehicleType", basicInfo.vehicleType)
+      form.setValue("condition", basicInfo.condition)
+    }
+  }, [basicInfo, form])
+
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: FormValues) => {
-      await saveBasicCarInfo(data)
+      // Save the form data to the store first
+      setBasicInfo({
+        ...data,
+        makeName: selectedMake?.name,
+        makeImage: selectedMake?.image,
+      })
+
+      // Save API data if available
+      if (carDetails) {
+        setApiData({
+          fuelType: carDetails.fuel_type,
+          transmissionType: carDetails.transmission,
+          drivetrain: carDetails.drivetrain,
+          engineCapacity: carDetails.engine,
+          horsepower: carDetails.horsepower.toString(),
+          torque: carDetails.torque.toString(),
+        })
+      }
+
+      // Then save to the database
+      const result = await saveBasicCarInfo(data)
+      return result
     },
-    onSuccess: () => {
-      router.push("/dashboard/cars/new/car-specification")
+    onSuccess: (result) => {
+      if (result.success) {
+        // Store the car ID in the Zustand store
+        setCarId(result.data.$id)
+
+        toast({
+          title: "Car information saved",
+          description: "Basic car information has been saved successfully.",
+          variant: "success",
+        })
+
+        router.push("/dashboard/cars/new/car-specification")
+      } else {
+        toast({
+          title: "Error saving car information",
+          description: result.error || "An error occurred while saving car information.",
+          variant: "error",
+        })
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Error saving car information",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "error",
+      })
+      console.error("Error saving car info:", error)
     },
   })
 
@@ -89,17 +172,21 @@ export default function BasicCarInfoForm() {
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="carMakeId"
+                name="makeId"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel className="text-base">Make (Brand)</FormLabel>
                     <FormControl>
-                      <CarMakeSelector 
+                      <CarMakeSelector
                         onSelect={(make) => {
-                          if (make?.id) {
-                            field.onChange(make.id)
+                          if (make) {
+                            field.onChange(make.$id)
+                            // Reset model when make changes
+                            form.setValue("model", "")
+                            setCarDetails(null)
                           }
-                        }} 
+                        }}
+                        defaultValue={field.value}
                       />
                     </FormControl>
                     <FormMessage />
@@ -113,10 +200,13 @@ export default function BasicCarInfoForm() {
                   <FormItem>
                     <FormLabel className="text-base">Model</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g. Corolla, Civic, C-Class"
-                        className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                        {...field}
+                      <CarModelSelector
+                        make={selectedMake?.name || ""}
+                        onSelect={(model, details) => {
+                          field.onChange(model)
+                          setCarDetails(details)
+                        }}
+                        defaultValue={field.value}
                       />
                     </FormControl>
                     <FormMessage />
@@ -125,6 +215,8 @@ export default function BasicCarInfoForm() {
               />
             </div>
 
+            {carDetails && <CarDetailsPreview carDetails={carDetails} makeLogo={selectedMake?.image} />}
+
             <div className="grid gap-6 md:grid-cols-3">
               <FormField
                 control={form.control}
@@ -132,7 +224,7 @@ export default function BasicCarInfoForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Year of Manufacture</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                           <SelectValue placeholder="Select year" />
@@ -156,7 +248,7 @@ export default function BasicCarInfoForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Vehicle Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                           <SelectValue placeholder="Select type" />
@@ -180,7 +272,7 @@ export default function BasicCarInfoForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Condition</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                           <SelectValue placeholder="Select condition" />
@@ -203,22 +295,19 @@ export default function BasicCarInfoForm() {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-between border-t bg-muted/20 px-6 py-4">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="gap-2"
-        >
+        <Button variant="outline" disabled className="gap-2">
           Back
         </Button>
         <Button
           onClick={form.handleSubmit(onSubmit)}
           disabled={isPending}
-          className="gap-2"
+          className="gap-2 bg-primary px-6 text-primary-foreground hover:bg-primary/90"
         >
-          Next Step
-          <ChevronRight className="h-4 w-4" />
+          {isPending ? "Saving..." : "Continue"}
+          {!isPending && <ChevronRight className="h-4 w-4" />}
         </Button>
       </CardFooter>
     </Card>
   )
 }
+
