@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
+import { toast } from "sonner"
 
 // Define the car data types
 interface CarMake {
@@ -10,70 +11,70 @@ interface CarMake {
 }
 
 interface CarApiData {
-  fuelType?: string
-  transmissionType?: string
+  fuel_type?: string
+  transmission_type?: string
   drivetrain?: string
-  engineCapacity?: string
+  engine_capacity?: string
   horsepower?: string
   torque?: string
 }
 
 interface BasicCarInfo {
-  makeId: string
-  makeName?: string
-  makeImage?: string
+  make_id: string
+  make_name?: string
+  make_image?: string
   model: string
   year: string
-  vehicleType: string
+  vehicle_type: string
   condition: string
 }
 
 interface CarSpecifications {
-  fuelType: string
-  transmissionType: string
+  fuel_type: string
+  transmission_type: string
   drivetrain: string
-  engineCapacity: string
+  engine_capacity: string
   horsepower: string
   torque: string
   mileage?: string
-  mileageUnit: "km" | "miles"
+  mileage_unit: "km" | "miles"
 }
 
 interface CarFeatures {
-  exteriorFeatures?: string[]
-  interiorFeatures?: string[]
-  safetyFeatures?: string[]
+  exterior_features?: string[]
+  interior_features?: string[]
+  safety_features?: string[]
 }
 
 interface OwnershipDocumentation {
   vin: string
-  registrationNumber: string
-  logbookAvailability: "yes" | "no"
-  previousOwners: string
-  insuranceStatus: "valid" | "expired" | "none"
+  registration_number: string
+  logbook_availability: "yes" | "no"
+  previous_owners: string
+  insurance_status: "valid" | "expired" | "none"
 }
 
 interface PricingPayment {
-  sellingPrice: string
+  selling_price: string
   currency: string
   negotiable: "yes" | "no"
-  installmentPlans: "yes" | "no"
-  paymentMethods: string[]
+  installment_plans: "yes" | "no"
+  payment_methods: string[]
 }
 
 // Define the store state
 interface CarState {
   // Car data
-  carId: string | null
-  apiData: CarApiData | null
-  basicInfo: BasicCarInfo | null
+  car_id: string | null
+  api_data: CarApiData | null
+  basic_info: BasicCarInfo | null
   specifications: CarSpecifications | null
   features: CarFeatures | null
   ownership: OwnershipDocumentation | null
   pricing: PricingPayment | null
 
   // Selected make for UI
-  selectedMake: CarMake | null
+  selected_make: CarMake | null
 
   // Actions
   setCarId: (id: string) => void
@@ -94,36 +95,36 @@ export const useCarStore = create<CarState>()(
   persist(
     (set) => ({
       // Initial state
-      carId: null,
-      apiData: null,
-      basicInfo: null,
+      car_id: null,
+      api_data: null,
+      basic_info: null,
       specifications: null,
       features: null,
       ownership: null,
       pricing: null,
-      selectedMake: null,
+      selected_make: null,
 
       // Actions
-      setCarId: (id) => set({ carId: id }),
-      setApiData: (data) => set({ apiData: data }),
-      setBasicInfo: (data) => set({ basicInfo: data }),
+      setCarId: (id) => set({ car_id: id }),
+      setApiData: (data) => set({ api_data: data }),
+      setBasicInfo: (data) => set({ basic_info: data }),
       setSpecifications: (data) => set({ specifications: data }),
       setFeatures: (data) => set({ features: data }),
       setOwnership: (data) => set({ ownership: data }),
       setPricing: (data) => set({ pricing: data }),
-      setSelectedMake: (make) => set({ selectedMake: make }),
+      setSelectedMake: (make) => set({ selected_make: make }),
 
       // Clear store
       clearStore: () =>
         set({
-          carId: null,
-          apiData: null,
-          basicInfo: null,
+          car_id: null,
+          api_data: null,
+          basic_info: null,
           specifications: null,
           features: null,
           ownership: null,
           pricing: null,
-          selectedMake: null,
+          selected_make: null,
         }),
     }),
     {
@@ -134,14 +135,12 @@ export const useCarStore = create<CarState>()(
 )
 
 // Helper functions
-export function validateCarData(router: any, toast: any): boolean {
-  const carId = useCarStore.getState().carId
+export function validateCarData(router: any): boolean {
+  const carId = useCarStore.getState().car_id
 
   if (!carId) {
-    toast({
-      title: "No car information found",
+    toast.error("No car information found", {
       description: "Please start from the beginning to add a new car.",
-      variant: "error",
     })
     router.push("/dashboard/cars/new")
     return false

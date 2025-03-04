@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { useState, useEffect } from "react"
 import { z } from "zod"
 import { CarIcon, ChevronRight } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,8 +17,7 @@ import { saveBasicCarInfo } from "@/lib/actions"
 import { CarMakeSelector } from "./car-make-selector"
 import { CarModelSelector } from "./car-model-selector"
 import { CarDetailsPreview } from "./car-details-preview"
-import { useToast } from "@/components/ui/use-toast"
-import { useCarStore } from "@/lib/store/car-store"
+import { useCarStore } from "@/store/car-store"
 
 const currentYear = new Date().getFullYear()
 const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i)
@@ -40,10 +40,10 @@ const vehicleTypes = [
 const conditions = ["Brand New", "Used", "Certified Pre-Owned"]
 
 const formSchema = z.object({
-  makeId: z.string().min(1, "Make is required"),
+  make_id: z.string().min(1, "Make is required"),
   model: z.string().min(1, "Model is required"),
   year: z.string().min(1, "Year is required"),
-  vehicleType: z.string().min(1, "Vehicle type is required"),
+  vehicle_type: z.string().min(1, "Vehicle type is required"),
   condition: z.string().min(1, "Condition is required"),
 })
 
@@ -51,24 +51,23 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function BasicCarInfoForm() {
   const router = useRouter()
-  const { toast } = useToast()
   const [carDetails, setCarDetails] = useState<any>(null)
 
   // Zustand store
-  const selectedMake = useCarStore((state) => state.selectedMake)
+  const selected_make = useCarStore((state) => state.selected_make)
   const setCarId = useCarStore((state) => state.setCarId)
   const setApiData = useCarStore((state) => state.setApiData)
   const setBasicInfo = useCarStore((state) => state.setBasicInfo)
-  const basicInfo = useCarStore((state) => state.basicInfo)
+  const basic_info = useCarStore((state) => state.basic_info)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      makeId: basicInfo?.makeId || "",
-      model: basicInfo?.model || "",
-      year: basicInfo?.year || "",
-      vehicleType: basicInfo?.vehicleType || "",
-      condition: basicInfo?.condition || "",
+      make_id: basic_info?.make_id || "",
+      model: basic_info?.model || "",
+      year: basic_info?.year || "",
+      vehicle_type: basic_info?.vehicle_type || "",
+      condition: basic_info?.condition || "",
     },
   })
 
@@ -76,42 +75,42 @@ export default function BasicCarInfoForm() {
   useEffect(() => {
     if (carDetails) {
       form.setValue("year", carDetails.year.toString())
-      form.setValue("vehicleType", carDetails.type || "")
+      form.setValue("vehicle_type", carDetails.type || "")
 
       // If the vehicle type from API doesn't match our options, set to "Other"
       if (!vehicleTypes.includes(carDetails.type)) {
-        form.setValue("vehicleType", "Other")
+        form.setValue("vehicle_type", "Other")
       }
     }
   }, [carDetails, form])
 
   // Pre-fill form with data from store if available
   useEffect(() => {
-    if (basicInfo) {
-      form.setValue("makeId", basicInfo.makeId)
-      form.setValue("model", basicInfo.model)
-      form.setValue("year", basicInfo.year)
-      form.setValue("vehicleType", basicInfo.vehicleType)
-      form.setValue("condition", basicInfo.condition)
+    if (basic_info) {
+      form.setValue("make_id", basic_info.make_id)
+      form.setValue("model", basic_info.model)
+      form.setValue("year", basic_info.year)
+      form.setValue("vehicle_type", basic_info.vehicle_type)
+      form.setValue("condition", basic_info.condition)
     }
-  }, [basicInfo, form])
+  }, [basic_info, form])
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: FormValues) => {
       // Save the form data to the store first
       setBasicInfo({
         ...data,
-        makeName: selectedMake?.name,
-        makeImage: selectedMake?.image,
+        make_name: selected_make?.name,
+        make_image: selected_make?.image,
       })
 
       // Save API data if available
       if (carDetails) {
         setApiData({
-          fuelType: carDetails.fuel_type,
-          transmissionType: carDetails.transmission,
+          fuel_type: carDetails.fuel_type,
+          transmission_type: carDetails.transmission,
           drivetrain: carDetails.drivetrain,
-          engineCapacity: carDetails.engine,
+          engine_capacity: carDetails.engine,
           horsepower: carDetails.horsepower.toString(),
           torque: carDetails.torque.toString(),
         })
@@ -126,26 +125,20 @@ export default function BasicCarInfoForm() {
         // Store the car ID in the Zustand store
         setCarId(result.data.$id)
 
-        toast({
-          title: "Car information saved",
+        toast.success("Car information saved", {
           description: "Basic car information has been saved successfully.",
-          variant: "success",
         })
 
         router.push("/dashboard/cars/new/car-specification")
       } else {
-        toast({
-          title: "Error saving car information",
+        toast.error("Error saving car information", {
           description: result.error || "An error occurred while saving car information.",
-          variant: "error",
         })
       }
     },
     onError: (error) => {
-      toast({
-        title: "Error saving car information",
+      toast.error("Error saving car information", {
         description: "An unexpected error occurred. Please try again.",
-        variant: "error",
       })
       console.error("Error saving car info:", error)
     },
@@ -172,7 +165,7 @@ export default function BasicCarInfoForm() {
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="makeId"
+                name="make_id"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel className="text-base">Make (Brand)</FormLabel>
@@ -201,7 +194,7 @@ export default function BasicCarInfoForm() {
                     <FormLabel className="text-base">Model</FormLabel>
                     <FormControl>
                       <CarModelSelector
-                        make={selectedMake?.name || ""}
+                        make={selected_make?.name || ""}
                         onSelect={(model, details) => {
                           field.onChange(model)
                           setCarDetails(details)
@@ -215,7 +208,7 @@ export default function BasicCarInfoForm() {
               />
             </div>
 
-            {carDetails && <CarDetailsPreview carDetails={carDetails} makeLogo={selectedMake?.image} />}
+            {carDetails && <CarDetailsPreview carDetails={carDetails} makeLogo={selected_make?.image} />}
 
             <div className="grid gap-6 md:grid-cols-3">
               <FormField
@@ -244,7 +237,7 @@ export default function BasicCarInfoForm() {
               />
               <FormField
                 control={form.control}
-                name="vehicleType"
+                name="vehicle_type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Vehicle Type</FormLabel>

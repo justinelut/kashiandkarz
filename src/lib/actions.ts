@@ -1,5 +1,6 @@
 "use server"
 
+import axios from "axios"
 import { revalidatePath } from "next/cache"
 import { Databases, ID, Client } from "node-appwrite"
 
@@ -197,3 +198,50 @@ export async function savePhotoVideo(data: PhotoVideo, carId: string) {
     return { success: false, error: "Failed to save photo and video data" }
   }
 }
+
+
+const rapidApiKey = process.env.RAPID_API_KEY as string
+
+//get car models
+
+export const fetchCarModels = async (make: string, searchQuery: string) => {
+   // Store API key in environment variables
+
+  if (!rapidApiKey) {
+    throw new Error("RapidAPI Key not found");
+  }
+  if (!make || searchQuery.length < 2) return [];
+
+  try {
+    console.log("Make:", make);
+    console.log("Search Query:", searchQuery);
+    console.log("Using RapidAPI Key:", rapidApiKey);
+
+    const response = await fetch(
+      `https://cars-by-api-ninjas.p.rapidapi.com/v1/cars?model=corolla`,
+      {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key": rapidApiKey,
+          "X-RapidAPI-Host": "cars-by-api-ninjas.p.rapidapi.com",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error Response:", errorData);
+      throw new Error(`API Error: ${response.status} - ${errorData.message || "Unknown error"}`);
+    }
+
+    const data = await response.json();
+    console.log("Response Data:", data);
+
+    // Remove duplicates by model name
+    return Array.from(new Map(data.map((car) => [car.model, car])).values());
+  } catch (error: any) {
+    console.error("Error fetching car models:", error.message);
+    return [];
+  }
+};
