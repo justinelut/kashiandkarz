@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
 	// 	reactCompiler: true
 	// },
 	images: {
+		unoptimized: true,
+
 		remotePatterns: [
 			{
 				protocol: "https",
@@ -48,7 +50,7 @@ const nextConfig: NextConfig = {
 			{
 				protocol: "https",
 				hostname: "www.carlogos.org",
-        port: "",
+				port: "",
 			},
 		],
 	},

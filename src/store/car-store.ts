@@ -10,23 +10,12 @@ interface CarMake {
   image: string
 }
 
-interface CarApiData {
-  fuel_type?: string
-  transmission_type?: string
-  drivetrain?: string
-  engine_capacity?: string
-  horsepower?: string
-  torque?: string
-}
-
 interface BasicCarInfo {
-  make_id: string
-  make_name?: string
-  make_image?: string
-  model: string
-  year: string
-  vehicle_type: string
-  condition: string
+  car_make: string;
+	car_model: string;
+	year: string;
+	vehicle_type: string;
+	condition: string;
 }
 
 interface CarSpecifications {
@@ -66,7 +55,6 @@ interface PricingPayment {
 interface CarState {
   // Car data
   car_id: string | null
-  api_data: CarApiData | null
   basic_info: BasicCarInfo | null
   specifications: CarSpecifications | null
   features: CarFeatures | null
@@ -78,7 +66,6 @@ interface CarState {
 
   // Actions
   setCarId: (id: string) => void
-  setApiData: (data: CarApiData) => void
   setBasicInfo: (data: BasicCarInfo) => void
   setSpecifications: (data: CarSpecifications) => void
   setFeatures: (data: CarFeatures) => void
@@ -96,7 +83,6 @@ export const useCarStore = create<CarState>()(
     (set) => ({
       // Initial state
       car_id: null,
-      api_data: null,
       basic_info: null,
       specifications: null,
       features: null,
@@ -106,7 +92,6 @@ export const useCarStore = create<CarState>()(
 
       // Actions
       setCarId: (id) => set({ car_id: id }),
-      setApiData: (data) => set({ api_data: data }),
       setBasicInfo: (data) => set({ basic_info: data }),
       setSpecifications: (data) => set({ specifications: data }),
       setFeatures: (data) => set({ features: data }),
@@ -118,7 +103,6 @@ export const useCarStore = create<CarState>()(
       clearStore: () =>
         set({
           car_id: null,
-          api_data: null,
           basic_info: null,
           specifications: null,
           features: null,
@@ -142,7 +126,7 @@ export function validateCarData(router: any): boolean {
     toast.error("No car information found", {
       description: "Please start from the beginning to add a new car.",
     })
-    router.push("/dashboard/cars/new")
+    router.push("/sell-car")
     return false
   }
 

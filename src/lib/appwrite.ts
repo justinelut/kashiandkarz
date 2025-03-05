@@ -23,7 +23,7 @@ client
 const account = new Account(client);
 const databases = new Databases(client); // Add database instance
 const storage = new Storage(client);
-const messaging = new Messaging(client);
+const messaging = new Messaging(client); 
 const avatars = new Avatars(client);
 const databaseid = "675351130030b8e7344f";
 const userscollectionId = "67790657003488f8b7b8";

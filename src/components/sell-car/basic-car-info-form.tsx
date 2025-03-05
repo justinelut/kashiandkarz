@@ -43,8 +43,8 @@ const vehicleTypes = [
 const conditions = ["Brand New", "Used", "Certified Pre-Owned"]
 
 const formSchema = z.object({
-  make_id: z.string().min(1, "Make is required"),
-  model: z.string().min(1, "Model is required"),
+  car_make: z.string().min(1, "Make is required"),
+  car_model: z.string().min(1, "Model is required"),
   year: z.string().min(1, "Year is required"),
   vehicle_type: z.string().min(1, "Vehicle type is required"),
   condition: z.string().min(1, "Condition is required"),
@@ -64,8 +64,8 @@ export default function BasicCarInfoForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      make_id: basic_info?.make_id || "",
-      model: basic_info?.model || "",
+      car_make: basic_info?.car_make || "",
+      car_model: basic_info?.car_model || "",
       year: basic_info?.year || "",
       vehicle_type: basic_info?.vehicle_type || "",
       condition: basic_info?.condition || "",
@@ -75,8 +75,8 @@ export default function BasicCarInfoForm() {
   // Pre-fill form with data from store if available
   useEffect(() => {
     if (basic_info) {
-      form.setValue("make_id", basic_info.make_id)
-      form.setValue("model", basic_info.model)
+      form.setValue("car_make", basic_info.car_make)
+      form.setValue("car_model", basic_info.car_model)
       form.setValue("year", basic_info.year)
       form.setValue("vehicle_type", basic_info.vehicle_type)
       form.setValue("condition", basic_info.condition)
@@ -93,10 +93,11 @@ export default function BasicCarInfoForm() {
       // Prepare the basic info data with the correct structure
       const basicInfoData = {
         ...data,
-        make_id: selected_make.$id, // Use the database ID from the saved make
-        make_name: selected_make.name,
-        make_image: selected_make.image.optimized || "",
+        car_make: selected_make.$id, // Use the database ID from the saved make
+        car_model: selected_make.name
       }
+
+      console.log(basicInfoData)
 
       // Save to store first
       setBasicInfo(basicInfoData)
@@ -125,7 +126,8 @@ export default function BasicCarInfoForm() {
   })
 
   function onSubmit(data: FormValues) {
-    mutate(data)
+    console.log(data)
+    // mutate(data)
   }
 
   return (
@@ -142,7 +144,7 @@ export default function BasicCarInfoForm() {
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="make_id"
+                name="car_make"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel className="text-base">Make (Brand)</FormLabel>
@@ -163,7 +165,7 @@ export default function BasicCarInfoForm() {
 
               <FormField
                 control={form.control}
-                name="model"
+                name="car_model"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Model</FormLabel>
