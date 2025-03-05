@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
-import PricingPaymentForm from "@/components/sell-car/pricing-payment-form"
 import { StepIndicator } from "@/components/sell-car/step-indicator"
+import ReviewSubmitForm from "@/components/sell-car/review"
+import ReviewForm from "@/components/sell-car/review"
 
 export const metadata: Metadata = {
   title: "Sell Your Car - Pricing & Payment",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function PricingPaymentPage() {
   return (
-    <div className="container max-w-5xl py-10">
+    <div className="mx-auto container max-w-5xl py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Sell Your Car</h1>
         <p className="mt-2 text-muted-foreground">
@@ -17,12 +18,15 @@ export default function PricingPaymentPage() {
         </p>
       </div>
 
-      <StepIndicator currentStep={5} totalSteps={6} completedSteps={[1, 2, 3, 4]} />
+      <StepIndicator currentStep={5} totalSteps={6} completedSteps={[1, 2, 3, 4,5,6]} />
 
       <div className="mt-8">
-        <PricingPaymentForm />
+        <ReviewSubmitForm />
       </div>
     </div>
   )
 }
 
+export function ReviewPage() {
+  return <ReviewForm />
+}

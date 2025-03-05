@@ -50,6 +50,11 @@ interface OwnershipDocumentation {
 	insurance_status: "valid" | "expired" | "none";
 }
 
+interface PhotoVideo {
+	images?:string[],
+	video?: string;
+}
+
 interface PricingPayment {
 	selling_price: string;
 	currency: string;
@@ -58,14 +63,55 @@ interface PricingPayment {
 	payment_methods: string[];
 }
 
-interface PhotoVideo {
-	front_view: File;
-	rear_view: File;
-	left_side_view: File;
-	right_side_view: File;
-	interior_photos: File[];
-	engine_bay_photo: File;
-	video?: File;
+interface ReviewSubmit {
+  status : 'published' | 'draft',
+  availability: boolean
+}
+
+interface CarInformation {
+  // Basic Info
+  car_id: string
+  make: string
+  model: string
+  year: number
+  mileage: number
+  color: string
+  vin: string
+  transmission: string
+  fuel_type: string
+  condition: string
+  description: string
+
+  // Features
+  exterior_features: string[]
+  interior_features: string[]
+  safety_features: string[]
+  // comfort_features: string[]
+  // performance_features: string[]
+  // other_features: string[]
+
+  // Ownership
+  registration_status: string
+  insurance_status: string
+  ownership_history: string
+  service_history: string
+  accident_history: string
+
+  // Pricing
+  selling_price: string
+  currency: string
+  negotiable: "yes" | "no"
+  installment_plans: "yes" | "no"
+  payment_methods: string[]
+
+  // Photos & Video
+  images: string[]
+  video?: string
+
+  // Status
+  status: "draft" | "published"
+  availability: boolean
+ 
 }
 
 const databaseId = process.env.APPWRITE_DATABASE_ID as string;
@@ -342,4 +388,63 @@ export async function uploadFiles(formData: FormData) {
 		console.error("Error uploading files:", error);
 		return { success: false, error: "Failed to upload files" };
 	}
+}
+
+export async function saveReviewSubmit(data: ReviewSubmit, car_id: string): Promise<{ success: boolean, data: null, error?: string }> {
+  try {
+    const databases = new Databases(client);
+    
+    await databases.updateDocument(
+      databaseId,
+      carinfocollectionId,
+      car_id,
+      {
+        status: data.status,
+        availability: data.availability,
+      }
+    );
+
+    return {
+      success: true,
+      data: null
+    };
+  } catch (error) {
+    console.error('Error saving review submit:', error);
+    return {
+      success: false,
+      error: 'Failed to save review submit'
+    };
+  }
+}
+
+export async function getCarInformation(car_id: string): Promise<{ success: boolean, data: CarInformation | null, error?: string }> {
+  try {
+    const databases = new Databases(client);
+    
+    const car = await databases.getDocument(
+      databaseId,
+      carinfocollectionId,
+      car_id
+    );
+
+    if (!car) {
+      return {
+        success: false,
+        error: 'Car not found',
+        data: null
+      };
+    }
+
+    return {
+      success: true,
+      data: car as CarInformation
+    };
+  } catch (error) {
+    console.error('Error fetching car information:', error);
+    return {
+      success: false,
+      error: 'Failed to fetch car information',
+      data: null
+    };
+  }
 }

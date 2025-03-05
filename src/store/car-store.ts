@@ -51,6 +51,11 @@ interface PricingPayment {
   payment_methods: string[]
 }
 
+interface PhotosData {
+  images: string[];
+  video?: string;
+}
+
 // Define the store state
 interface CarState {
   // Car data
@@ -60,6 +65,7 @@ interface CarState {
   features: CarFeatures | null
   ownership: OwnershipDocumentation | null
   pricing: PricingPayment | null
+  photos: PhotosData | null
 
   // Selected make for UI
   selected_make: CarMake | null
@@ -72,10 +78,15 @@ interface CarState {
   setOwnership: (data: OwnershipDocumentation) => void
   setPricing: (data: PricingPayment) => void
   setSelectedMake: (make: CarMake | null) => void
+  setPhotos: (data: PhotosData) => void
+  
 
   // Clear store
   clearStore: () => void
 }
+
+
+
 
 // Create the store with persistence
 export const useCarStore = create<CarState>()(
@@ -89,6 +100,7 @@ export const useCarStore = create<CarState>()(
       ownership: null,
       pricing: null,
       selected_make: null,
+      photos: null,
 
       // Actions
       setCarId: (id) => set({ car_id: id }),
@@ -98,6 +110,13 @@ export const useCarStore = create<CarState>()(
       setOwnership: (data) => set({ ownership: data }),
       setPricing: (data) => set({ pricing: data }),
       setSelectedMake: (make) => set({ selected_make: make }),
+      setPhotos: (data) => set((state) => {
+        // Only update if data is different
+        if (JSON.stringify(state.photos) === JSON.stringify(data)) {
+          return state
+        }
+        return { photos: data }
+      }),
 
       // Clear store
       clearStore: () =>
@@ -109,6 +128,7 @@ export const useCarStore = create<CarState>()(
           ownership: null,
           pricing: null,
           selected_make: null,
+          photos: null,
         }),
     }),
     {
@@ -132,4 +152,3 @@ export function validateCarData(router: any): boolean {
 
   return true
 }
-

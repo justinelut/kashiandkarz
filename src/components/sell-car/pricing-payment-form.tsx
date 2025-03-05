@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useEffect } from "react"
 import { z } from "zod"
 import { ChevronLeft, ChevronRight, DollarSignIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { savePricingPayment } from "@/lib/actions"
+import { useCarStore } from "@/store/car-store"
 
 const currencies = [
   { value: "USD", label: "USD ($)" },
@@ -31,11 +34,11 @@ const paymentMethods = [
 ]
 
 const formSchema = z.object({
-  price: z.string().min(1, "Price is required"),
+  selling_price: z.string().min(1, "Price is required"),
   currency: z.string().min(1, "Currency is required"),
   negotiable: z.enum(["yes", "no"]),
-  installmentPlans: z.enum(["yes", "no"]),
-  paymentMethods: z.array(z.string()).min(1, "Select at least one payment method"),
+  installment_plans: z.enum(["yes", "no"]),
+  payment_methods: z.array(z.string()).min(1, "Select at least one payment method"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -43,28 +46,78 @@ type FormValues = z.infer<typeof formSchema>
 export default function PricingPaymentForm() {
   const router = useRouter()
 
+  // Zustand store
+  const car_id = useCarStore((state) => state.car_id)
+  const pricing = useCarStore((state) => state.pricing)
+  const setPricing = useCarStore((state) => state.setPricing)
+
+  // Validate that we have a car ID
+  useEffect(() => {
+    if (!car_id) {
+      toast.error("No car information found", {
+        description: "Please start from the beginning to add a new car.",
+      })
+      router.push("/sell-car")
+    }
+  }, [car_id, router])
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      price: "",
-      currency: "USD",
-      negotiable: "no",
-      installmentPlans: "no",
-      paymentMethods: ["cash"],
+      selling_price: pricing?.selling_price || "",
+      currency: pricing?.currency || "USD",
+      negotiable: pricing?.negotiable || "no",
+      installment_plans: pricing?.installment_plans || "no",
+      payment_methods: pricing?.payment_methods || ["cash"],
     },
   })
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: FormValues) => {
-      await savePricingPayment(data)
+      if (!car_id) {
+        throw new Error("No car ID found")
+      }
+
+      // Save to store first
+      setPricing(data)
+
+      // Then save to database
+      return await savePricingPayment(data, car_id)
     },
-    onSuccess: () => {
-      router.push("/sell-car/step-6")
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Pricing and payment options saved", {
+          description: "Pricing and payment options have been saved successfully.",
+        })
+        router.push("/dashboard/cars/new/review")
+      } else {
+        toast.error("Error saving pricing and payment options", {
+          description: result.error || "An error occurred while saving pricing and payment options.",
+        })
+      }
+    },
+    onError: (error) => {
+      toast.error("Error saving pricing and payment options", {
+        description: "An unexpected error occurred. Please try again.",
+      })
+      console.error("Error saving pricing and payment options:", error)
     },
   })
 
   function onSubmit(data: FormValues) {
     mutate(data)
+  }
+
+  if (!car_id) {
+    return (
+      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-muted/50 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-40">
+            <p>Loading car information...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -84,7 +137,7 @@ export default function PricingPaymentForm() {
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="price"
+                name="selling_price"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Selling Price</FormLabel>
@@ -106,7 +159,7 @@ export default function PricingPaymentForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Currency</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                           <SelectValue placeholder="Select currency" />
@@ -133,11 +186,7 @@ export default function PricingPaymentForm() {
                 <FormItem className="space-y-3">
                   <FormLabel className="text-base">Is the price negotiable?</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="yes" />
@@ -159,16 +208,12 @@ export default function PricingPaymentForm() {
 
             <FormField
               control={form.control}
-              name="installmentPlans"
+              name="installment_plans"
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <FormLabel className="text-base">Are installment plans available?</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="yes" />
@@ -190,7 +235,7 @@ export default function PricingPaymentForm() {
 
             <FormField
               control={form.control}
-              name="paymentMethods"
+              name="payment_methods"
               render={() => (
                 <FormItem>
                   <div className="mb-4">
@@ -201,7 +246,7 @@ export default function PricingPaymentForm() {
                     <FormField
                       key={method.id}
                       control={form.control}
-                      name="paymentMethods"
+                      name="payment_methods"
                       render={({ field }) => {
                         return (
                           <FormItem key={method.id} className="flex flex-row items-start space-x-3 space-y-0">
