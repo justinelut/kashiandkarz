@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useEffect } from "react"
 import { z } from "zod"
-import { CarIcon, ChevronRight } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveBasicCarInfo } from "@/lib/actions"
 import { CarMakeSelector } from "./car-make-selector"
 import { useCarStore } from "@/store/car-store"
+import { Textarea } from "../ui/textarea"
 
 const currentYear = new Date().getFullYear()
 const years = Array.from({ length: 50 }, (_, i) => (currentYear - i).toString())
@@ -43,11 +44,16 @@ const vehicleTypes = [
 const conditions = ["Brand New", "Used", "Certified Pre-Owned"]
 
 const formSchema = z.object({
+  title: z.string().min(10, "Title must be at least 10 characters").max(100, "Title must be less than 100 characters"),
   car_make: z.string().min(1, "Make is required"),
   car_model: z.string().min(1, "Model is required"),
   year: z.string().min(1, "Year is required"),
   vehicle_type: z.string().min(1, "Vehicle type is required"),
   condition: z.string().min(1, "Condition is required"),
+  description: z
+    .string()
+    .min(10, "Description must be at least 10 characters")
+    .max(1000, "Description must be less than 1000 characters"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -64,22 +70,26 @@ export default function BasicCarInfoForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      title: basic_info?.title || "",
       car_make: basic_info?.car_make || "",
       car_model: basic_info?.car_model || "",
       year: basic_info?.year || "",
       vehicle_type: basic_info?.vehicle_type || "",
       condition: basic_info?.condition || "",
+      description: basic_info?.description || "",
     },
   })
 
   // Pre-fill form with data from store if available
   useEffect(() => {
     if (basic_info) {
+      form.setValue("title", basic_info.title || "")
       form.setValue("car_make", basic_info.car_make)
       form.setValue("car_model", basic_info.car_model)
       form.setValue("year", basic_info.year)
       form.setValue("vehicle_type", basic_info.vehicle_type)
       form.setValue("condition", basic_info.condition)
+      form.setValue("description", basic_info.description || "")
     }
   }, [basic_info, form])
 
@@ -89,8 +99,6 @@ export default function BasicCarInfoForm() {
       if (!selected_make?.$id) {
         throw new Error("Please select a car make first")
       }
-
-      
 
       console.log(data)
 
@@ -135,6 +143,25 @@ export default function BasicCarInfoForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-8">
+            {/* Title Field */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base">Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter a catchy title for your listing (e.g., 2018 Rolls-Royce Ghost in Jet Black)"
+                      className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -250,7 +277,26 @@ export default function BasicCarInfoForm() {
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base">Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Provide a detailed description of your vehicle..."
+                      className="min-h-[120px] w-full rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
+
           <CardFooter className="flex justify-between">
             <Button variant="outline" type="button" disabled={isPending}>
               Cancel

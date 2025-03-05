@@ -23,6 +23,8 @@ interface BasicCarInfo {
 	year: string;
 	vehicle_type: string;
 	condition: string;
+  description: string;
+  title:string
 }
 
 interface CarSpecifications {
@@ -34,6 +36,7 @@ interface CarSpecifications {
 	torque: string;
 	mileage?: string;
 	mileage_unit: "km" | "miles";
+  color?:string
 }
 
 interface CarFeatures {
@@ -65,7 +68,8 @@ interface PricingPayment {
 
 interface ReviewSubmit {
   status : 'published' | 'draft',
-  availability: boolean
+  availability: boolean,
+  slug: string
 }
 
 interface CarInformation {
@@ -76,7 +80,7 @@ interface CarInformation {
   year: number
   mileage: number
   color: string
-  vin: string
+
   transmission: string
   fuel_type: string
   condition: string
@@ -86,16 +90,12 @@ interface CarInformation {
   exterior_features: string[]
   interior_features: string[]
   safety_features: string[]
-  // comfort_features: string[]
-  // performance_features: string[]
-  // other_features: string[]
 
-  // Ownership
-  registration_status: string
-  insurance_status: string
-  ownership_history: string
-  service_history: string
-  accident_history: string
+  vin?: string;
+	registration_number: string;
+	logbook_availability: "yes" | "no";
+	previous_owners: string;
+	insurance_status: "valid" | "expired" | "none";
 
   // Pricing
   selling_price: string
@@ -120,6 +120,7 @@ const carinfocollectionId = "67c731e80028573f6eaf";
 const exteriorFeatureCollectionId = "67c840c7003442c3231a";
 const interiorFeatureCollectionId = "67c840e000034786123d";
 const safetyFeatureCollectionId = "67c840ee000d9d33ac5f";
+const colorscollectionid = "67c86a92000277171665"
 
 export async function saveCarMake(data: CarMake) {
 	try {
@@ -337,6 +338,32 @@ export async function getExteriorFeatures() {
 	}
 }
 
+export async function getCarColors() {
+	try {
+		const carcolors = await database.listDocuments(
+			databaseId,
+			colorscollectionid,
+		);
+		return { success: true, data: carcolors.documents };
+	} catch (error) {
+		console.error("Error fetching colors", error);
+		return { success: false, error: "Failed to fetch colors" };
+	}
+}
+
+export async function getAllCars() {
+	try {
+		const carinfo = await database.listDocuments(
+			databaseId,
+			carinfocollectionId,
+		);
+		return carinfo.documents;
+	} catch (error) {
+		console.error("Error fetching colors", error);
+		return { success: false, error: "Failed to fetch colors" };
+	}
+}
+
 export async function getInteriorFeatures() {
 	try {
 		const features = await database.listDocuments(
@@ -401,6 +428,7 @@ export async function saveReviewSubmit(data: ReviewSubmit, car_id: string): Prom
       {
         status: data.status,
         availability: data.availability,
+        slug: data.slug,
       }
     );
 
@@ -446,5 +474,27 @@ export async function getCarInformation(car_id: string): Promise<{ success: bool
       error: 'Failed to fetch car information',
       data: null
     };
+  }
+}
+
+
+
+export async function updateBasicCarInfo(
+  data: BasicCarInfo & { id: string }
+): Promise<{ success: boolean; data?: BasicCarInfo; error?: string }> {
+  try {
+    // Update the document in your Appwrite database
+    const updatedCar = await database.updateDocument(
+      databaseId,
+      carinfocollectionId,
+      data.id,
+      data
+    )
+    // Revalidate the route so that the updated info is reflected in the UI
+    revalidatePath("/dashboard/cars/new/car-specification")
+    return { success: true, data: updatedCar as BasicCarInfo }
+  } catch (error) {
+    console.error("Error updating car information:", error)
+    return { success: false, error: "Failed to update car information" }
   }
 }

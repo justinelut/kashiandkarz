@@ -16,6 +16,8 @@ interface BasicCarInfo {
 	year: string;
 	vehicle_type: string;
 	condition: string;
+  description: string;
+  title: string;
 }
 
 interface CarSpecifications {
@@ -27,6 +29,7 @@ interface CarSpecifications {
   torque: string
   mileage?: string
   mileage_unit: "km" | "miles"
+  color: any
 }
 
 interface CarFeatures {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useEffect } from "react"
@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { saveCarSpecifications } from "@/lib/actions"
 import { useCarStore } from "@/store/car-store"
+import { getCarColors } from "@/lib/actions"
+import { cn } from "@/lib/utils"
 
 const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric", "LPG", "CNG", "Other"]
 const transmissionTypes = ["Automatic", "Manual", "CVT", "Semi-Automatic", "Dual-Clutch"]
@@ -31,6 +33,7 @@ const formSchema = z.object({
   torque: z.string().min(1, "Torque is required"),
   mileage: z.string().optional(),
   mileage_unit: z.enum(["km", "miles"]).default("km"),
+  color: z.string().min(1, "Color is required"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -43,6 +46,12 @@ export default function CarSpecificationsForm() {
   const specifications = useCarStore((state) => state.specifications)
   const setSpecifications = useCarStore((state) => state.setSpecifications)
 
+  //get colors colors with tanstack
+  const { data: carColors, isLoading } = useQuery({
+    queryKey: ["carColors"],
+    queryFn: getCarColors,
+  })
+  
   // Validate that we have a car ID
   useEffect(() => {
     if (!car_id) {
@@ -64,6 +73,7 @@ export default function CarSpecificationsForm() {
       torque: specifications?.torque || "",
       mileage: specifications?.mileage || "",
       mileage_unit: specifications?.mileage_unit || "km",
+      color: specifications?.color || "",
     },
   })
 
@@ -72,12 +82,23 @@ export default function CarSpecificationsForm() {
       if (!car_id) {
         throw new Error("No car ID found")
       }
-
-      // Save to store first
-      setSpecifications(data)
-
-      // Then save to database
-      return await saveCarSpecifications(data, car_id)
+  
+      // Find the selected color object based on the color name from the form
+      const selectedColor = carColors?.data?.find((c) => c.name === data.color)
+  
+      // Save to the store with full color details (name and hex)
+      setSpecifications({
+        ...data,
+        color: selectedColor ? { name: selectedColor.name, hex: selectedColor.hex } : data.color,
+      })
+  
+      // Prepare data for DB submission: replace the color field with the $id
+      const submissionData = {
+        ...data,
+        color: selectedColor ? selectedColor.$id : data.color,
+      }
+  
+      return await saveCarSpecifications(submissionData, car_id)
     },
     onSuccess: (result) => {
       if (result.success) {
@@ -98,6 +119,7 @@ export default function CarSpecificationsForm() {
       console.error("Error saving car specifications:", error)
     },
   })
+  
 
   function onSubmit(data: FormValues) {
     mutate(data)
@@ -307,6 +329,42 @@ export default function CarSpecificationsForm() {
                 />
               </div>
             </div>
+
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel className="text-base">Exterior Color</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                    >
+                      {carColors?.data?.map((color) => (
+                        <FormItem key={color.name} className="space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value={color.name} id={`color-${color.name}`} className="sr-only" />
+                          </FormControl>
+                          <FormLabel
+                            htmlFor={`color-${color.name}`}
+                            className={cn(
+                              "flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground",
+                              field.value === color.name && "border-primary",
+                            )}
+                          >
+                            <div className="h-10 w-10 rounded-full border" style={{ backgroundColor: color.hex }} />
+                            <span className="mt-2 text-center text-xs">{color.name}</span>
+                          </FormLabel>
+                        </FormItem>
+                      ))}
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
       </CardContent>
