@@ -23,8 +23,8 @@ interface BasicCarInfo {
 	year: string;
 	vehicle_type: string;
 	condition: string;
-  description: string;
-  title:string
+	description: string;
+	title: string;
 }
 
 interface CarSpecifications {
@@ -36,7 +36,7 @@ interface CarSpecifications {
 	torque: string;
 	mileage?: string;
 	mileage_unit: "km" | "miles";
-  color?:string
+	color?: string;
 }
 
 interface CarFeatures {
@@ -54,7 +54,7 @@ interface OwnershipDocumentation {
 }
 
 interface PhotoVideo {
-	images?:string[],
+	images?: string[];
 	video?: string;
 }
 
@@ -67,51 +67,56 @@ interface PricingPayment {
 }
 
 interface ReviewSubmit {
-  status : 'published' | 'draft',
-  availability: boolean,
-  slug: string
+	status: "published" | "draft";
+	availability: boolean;
+	slug: string;
+}
+interface UpdateStatus {
+	status: "published" | "draft";
+	availability: boolean;
+	slug: string;
+	featured: string;
 }
 
 interface CarInformation {
-  // Basic Info
-  car_id: string
-  make: string
-  model: string
-  year: number
-  mileage: number
-  color: string
+	// Basic Info
+	car_id: string;
+	make: string;
+	model: string;
+	year: number;
+	mileage: number;
+	color: string;
 
-  transmission: string
-  fuel_type: string
-  condition: string
-  description: string
+	transmission: string;
+	fuel_type: string;
+	condition: string;
+	description: string;
 
-  // Features
-  exterior_features: string[]
-  interior_features: string[]
-  safety_features: string[]
+	// Features
+	exterior_features: string[];
+	interior_features: string[];
+	safety_features: string[];
 
-  vin?: string;
+	vin?: string;
 	registration_number: string;
 	logbook_availability: "yes" | "no";
 	previous_owners: string;
 	insurance_status: "valid" | "expired" | "none";
 
-  // Pricing
-  selling_price: string
-  currency: string
-  negotiable: "yes" | "no"
-  installment_plans: "yes" | "no"
-  payment_methods: string[]
+	// Pricing
+	selling_price: string;
+	currency: string;
+	negotiable: "yes" | "no";
+	installment_plans: "yes" | "no";
+	payment_methods: string[];
 
-  // Photos & Video
-  images: string[]
-  video?: string
+	// Photos & Video
+	images: string[];
+	video?: string;
 
-  // Status
-  status: "draft" | "published"
-  availability: boolean
- 
+	// Status
+	status: "draft" | "published";
+	availability: boolean;
 }
 
 const databaseId = process.env.APPWRITE_DATABASE_ID as string;
@@ -120,7 +125,7 @@ const carinfocollectionId = "67c731e80028573f6eaf";
 const exteriorFeatureCollectionId = "67c840c7003442c3231a";
 const interiorFeatureCollectionId = "67c840e000034786123d";
 const safetyFeatureCollectionId = "67c840ee000d9d33ac5f";
-const colorscollectionid = "67c86a92000277171665"
+const colorscollectionid = "67c86a92000277171665";
 
 export async function saveCarMake(data: CarMake) {
 	try {
@@ -141,44 +146,44 @@ export async function saveCarMake(data: CarMake) {
 	}
 }
 
-export async function getCarMakes({
-  cursor = null,
-  search = "",
-  limit = 25,
+export const getCarMakes = async ({
+	cursor = null,
+	search = "",
+	limit = 25,
 }: {
-  cursor?: string | null;
-  search?: string;
-  limit?: number;
-}) {
-  try {
-    const queries: any[] = [];
+	cursor?: string | null;
+	search?: string;
+	limit?: number;
+}) => {
+	try {
+		const queries: any[] = [];
 
-    // Apply search filter
-    if (search) {
-      queries.push(Query.search("name", search));
-    }
+		// Apply search filter
+		if (search) {
+			queries.push(Query.search("name", search));
+		}
 
-    // Apply cursor for pagination
-    if (cursor) {
-      queries.push(Query.cursorAfter(cursor));
-    }
+		// Apply cursor for pagination
+		if (cursor) {
+			queries.push(Query.cursorAfter(cursor));
+		}
 
-    // Apply limit
-    queries.push(Query.limit(limit));
+		// Apply limit
+		queries.push(Query.limit(limit));
 
-    // Fetch from database
-    const response = await database.listDocuments(
-      databaseId,
-      carmakecollectionsId,
-      queries
-    );
+		// Fetch from database
+		const response = await database.listDocuments(
+			databaseId,
+			carmakecollectionsId,
+			queries,
+		);
 
-    return { success: true, data: response.documents };
-  } catch (error) {
-    console.error("Error fetching car makes:", error);
-    return { success: false, error: "Failed to fetch car makes" };
-  }
-}
+		return { success: true, data: response.documents };
+	} catch (error) {
+		console.error("Error fetching car makes:", error);
+		return { success: false, error: "Failed to fetch car makes" };
+	}
+};
 
 export async function saveBasicCarInfo(data: BasicCarInfo) {
 	try {
@@ -353,10 +358,7 @@ export async function getCarColors() {
 
 export async function getAllCars() {
 	try {
-		const carinfo = await database.listDocuments(
-			databaseId,
-			carinfocollectionId,
-		);
+		const carinfo = await database.listDocuments(databaseId, carinfocollectionId);
 		return carinfo.documents;
 	} catch (error) {
 		console.error("Error fetching colors", error);
@@ -401,10 +403,14 @@ export async function uploadFiles(formData: FormData) {
 			const uploadedFile = await storage.createFile(
 				process.env.APPWRITE_BUCKET_ID as string,
 				uniqueFileId,
-				file // Pass the file directly
+				file, // Pass the file directly
 			);
 
-			const fileUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string}/storage/buckets/${process.env.APPWRITE_BUCKET_ID as string}/files/${uploadedFile.$id}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT as string}`;
+			const fileUrl = `${
+				process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string
+			}/storage/buckets/${process.env.APPWRITE_BUCKET_ID as string}/files/${
+				uploadedFile.$id
+			}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT as string}`;
 
 			return fileUrl;
 		});
@@ -417,84 +423,109 @@ export async function uploadFiles(formData: FormData) {
 	}
 }
 
-export async function saveReviewSubmit(data: ReviewSubmit, car_id: string): Promise<{ success: boolean, data: null, error?: string }> {
-  try {
-    const databases = new Databases(client);
-    
-    await databases.updateDocument(
-      databaseId,
-      carinfocollectionId,
-      car_id,
-      {
-        status: data.status,
-        availability: data.availability,
-        slug: data.slug,
-      }
-    );
+export async function saveReviewSubmit(
+	data: ReviewSubmit,
+	car_id: string,
+): Promise<{ success: boolean; data: null; error?: string }> {
+	try {
+		const databases = new Databases(client);
 
-    return {
-      success: true,
-      data: null
-    };
-  } catch (error) {
-    console.error('Error saving review submit:', error);
-    return {
-      success: false,
-      error: 'Failed to save review submit'
-    };
-  }
+		await databases.updateDocument(databaseId, carinfocollectionId, car_id, {
+			status: data.status,
+			availability: data.availability,
+			slug: data.slug,
+		});
+
+		return {
+			success: true,
+			data: null,
+		};
+	} catch (error) {
+		console.error("Error saving review submit:", error);
+		return {
+			success: false,
+			error: "Failed to save review submit",
+		};
+	}
 }
 
-export async function getCarInformation(car_id: string): Promise<{ success: boolean, data: CarInformation | null, error?: string }> {
-  try {
-    const databases = new Databases(client);
-    
-    const car = await databases.getDocument(
-      databaseId,
-      carinfocollectionId,
-      car_id
-    );
+export async function updateStatus(
+	data: UpdateStatus,
+	car_id: string,
+): Promise<{ success: boolean; data: null; error?: string }> {
+	try {
+		const databases = new Databases(client);
 
-    if (!car) {
-      return {
-        success: false,
-        error: 'Car not found',
-        data: null
-      };
-    }
+		await databases.updateDocument(databaseId, carinfocollectionId, car_id, {
+			status: data.status,
+			availability: data.availability,
+			slug: data.slug,
+			featured: data.featured,
+		});
 
-    return {
-      success: true,
-      data: car as CarInformation
-    };
-  } catch (error) {
-    console.error('Error fetching car information:', error);
-    return {
-      success: false,
-      error: 'Failed to fetch car information',
-      data: null
-    };
-  }
+		return {
+			success: true,
+			data: null,
+		};
+	} catch (error) {
+		console.error("Error saving review submit:", error);
+		return {
+			success: false,
+			error: "Failed to save review submit",
+		};
+	}
 }
 
+export async function getCarInformation(
+	car_id: string,
+): Promise<{ success: boolean; data: CarInformation | null; error?: string }> {
+	try {
+		const databases = new Databases(client);
 
+		const car = await databases.getDocument(
+			databaseId,
+			carinfocollectionId,
+			car_id,
+		);
+
+		if (!car) {
+			return {
+				success: false,
+				error: "Car not found",
+				data: null,
+			};
+		}
+
+		return {
+			success: true,
+			data: car as CarInformation,
+		};
+	} catch (error) {
+		console.error("Error fetching car information:", error);
+		return {
+			success: false,
+			error: "Failed to fetch car information",
+			data: null,
+		};
+	}
+}
 
 export async function updateBasicCarInfo(
-  data: BasicCarInfo & { id: string }
+	data: BasicCarInfo & { id: string },
 ): Promise<{ success: boolean; data?: BasicCarInfo; error?: string }> {
-  try {
-    // Update the document in your Appwrite database
-    const updatedCar = await database.updateDocument(
-      databaseId,
-      carinfocollectionId,
-      data.id,
-      data
-    )
-    // Revalidate the route so that the updated info is reflected in the UI
-    revalidatePath("/dashboard/cars/new/car-specification")
-    return { success: true, data: updatedCar as BasicCarInfo }
-  } catch (error) {
-    console.error("Error updating car information:", error)
-    return { success: false, error: "Failed to update car information" }
-  }
+	try {
+		// Update the document in your Appwrite database
+		const updatedCar = await database.updateDocument(
+			databaseId,
+			carinfocollectionId,
+			data.id,
+			data,
+		);
+		// Revalidate the route so that the updated info is reflected in the UI
+		revalidatePath("/dashboard/cars/new/car-specification");
+		return { success: true, data: updatedCar };
+	} catch (error) {
+		console.error("Error updating car information:", error);
+		return { success: false, error: "Failed to update car information" };
+	}
 }

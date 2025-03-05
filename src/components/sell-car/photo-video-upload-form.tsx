@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useRef, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { ChevronLeft, Camera, X, ImageIcon, Video } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -11,14 +11,26 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { useMutation } from "@tanstack/react-query"
-import { savePhotoVideo, uploadFiles } from "@/lib/actions"
+import { savePhotoVideo, uploadFiles, getCarInformation } from "@/lib/actions"
 import { useCarStore } from "@/store/car-store"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const formSchema = z.object({
   images: z.array(z.string()).min(1, "At least one image is required"),
-  video: z.string().url("Please enter a valid video URL").optional().or(z.literal("")),
+  video: z
+    .string()
+    .url("Please enter a valid video URL")
+    .optional()
+    .or(z.literal("")),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -50,14 +62,42 @@ const bounceIn = {
 
 export default function PhotoVideoUploadForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const mode = searchParams.get("mode")
+  const id = searchParams.get("id")
+  const isEditMode = mode === "edit" && id
+
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const horizontalScrollRef = useRef<HTMLDivElement>(null)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
 
   // Zustand store
   const car_id = useCarStore((state) => state.car_id)
   const photos = useCarStore((state) => state.photos)
   const setPhotos = useCarStore((state) => state.setPhotos)
+  const setCarId = useCarStore((state) => state.setCarId)
+
+  // Fetch car data in edit mode and update store
+  useEffect(() => {
+    const fetchCarData = async () => {
+      if (isEditMode && id) {
+        const { success, data } = await getCarInformation(id)
+        if (success && data) {
+          // Assuming the photos data is stored under data.photos
+          setPhotos({
+            images: data?.images || [],
+            video: data?.video || "",
+          })
+          setCarId(id)
+        } else {
+          toast.error("Failed to fetch car information")
+          router.push("/dashboard/cars")
+        }
+      }
+    }
+    fetchCarData()
+  }, [isEditMode, id, setPhotos, setCarId, router])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -67,7 +107,7 @@ export default function PhotoVideoUploadForm() {
     },
   })
 
-  // Update form when photos change in store
+  // Update form values if store photos change
   useEffect(() => {
     if (photos) {
       form.reset({
@@ -123,23 +163,24 @@ export default function PhotoVideoUploadForm() {
       if (!car_id) {
         throw new Error("No car ID found")
       }
-
       // Save to database first
       const result = await savePhotoVideo(data, car_id)
-      
       // Only update store if save was successful
       if (result.success) {
         setPhotos(data)
       }
-      
       return result
     },
     onSuccess: (result) => {
       if (result.success) {
-        toast.success("Photos saved", {
-          description: "Car photos have been saved successfully.",
-        })
-        router.push("/dashboard/cars/new/pricing")
+        if (isEditMode) {
+          setShowSuccessDialog(true)
+        } else {
+          toast.success("Photos saved", {
+            description: "Car photos have been saved successfully.",
+          })
+          router.push("/dashboard/cars/new/pricing")
+        }
       } else {
         toast.error("Error saving photos", {
           description: result.error || "An error occurred while saving photos.",
@@ -154,26 +195,31 @@ export default function PhotoVideoUploadForm() {
     },
   })
 
-  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files?.length) return
+  const handleFileUpload = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files
+      if (!files?.length) return
 
-    const formData = new FormData()
-    Array.from(files).forEach((file) => {
-      formData.append("files", file)
-    })
+      const formData = new FormData()
+      Array.from(files).forEach((file) => {
+        formData.append("files", file)
+      })
 
-    uploadMutation.mutate(formData)
-  }, [uploadMutation])
+      uploadMutation.mutate(formData)
+    },
+    [uploadMutation],
+  )
 
   return (
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-6 py-8">
-        {/* Description at the top */}
+        {/* Top Description */}
         <div className="mb-8 text-center">
           <motion.div variants={fadeInDown} initial="initial" animate="animate">
             <h1 className="text-3xl font-bold text-gray-900">Car Photos & Video</h1>
-            <p className="mt-2 text-lg text-gray-500">Upload high-quality photos to showcase your car!</p>
+            <p className="mt-2 text-lg text-gray-500">
+              Upload high-quality photos to showcase your car!
+            </p>
           </motion.div>
         </div>
 
@@ -195,7 +241,7 @@ export default function PhotoVideoUploadForm() {
 
         {/* Main Upload Section */}
         <div className="space-y-6">
-          {/* Main Image Preview or Upload Placeholder */}
+          {/* Image Preview or Placeholder */}
           <div className="relative">
             {form.watch("images")?.length > 0 ? (
               <motion.div
@@ -206,7 +252,9 @@ export default function PhotoVideoUploadForm() {
               >
                 <div className="relative w-full" style={{ height: "350px" }}>
                   <Image
-                    src={form.watch("images")[selectedImageIndex] || "/placeholder.svg"}
+                    src={
+                      form.watch("images")[selectedImageIndex] || "/placeholder.svg"
+                    }
                     alt="Selected"
                     fill
                     className="rounded-2xl object-cover"
@@ -263,10 +311,7 @@ export default function PhotoVideoUploadForm() {
               <div
                 ref={horizontalScrollRef}
                 className="flex space-x-4 overflow-x-auto py-2 scrollbar-hide"
-                style={{
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                }}
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
                 {Array.from({ length: 5 }, (_, index) => (
                   <motion.div
@@ -281,7 +326,9 @@ export default function PhotoVideoUploadForm() {
                         onClick={() => setSelectedImageIndex(index)}
                         className={cn(
                           "relative overflow-hidden rounded-xl transition-all",
-                          selectedImageIndex === index ? "ring-2 ring-primary ring-offset-2" : "",
+                          selectedImageIndex === index
+                            ? "ring-2 ring-primary ring-offset-2"
+                            : "",
                         )}
                       >
                         <div className="relative" style={{ width: "80px", height: "80px" }}>
@@ -345,14 +392,18 @@ export default function PhotoVideoUploadForm() {
               </button>
               <button
                 onClick={() => saveForm(form.getValues())}
-                disabled={!form.watch("images")?.length || uploadMutation.isPending || isSaving}
+                disabled={
+                  !form.watch("images")?.length ||
+                  uploadMutation.isPending ||
+                  isSaving
+                }
                 className={cn(
                   "flex items-center justify-center rounded-full px-6 py-3 transition-colors",
                   uploadMutation.isPending || isSaving
                     ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                     : !form.watch("images")?.length
-                      ? "bg-gray-200 text-gray-500"
-                      : "bg-primary text-white hover:bg-primary/90",
+                    ? "bg-gray-200 text-gray-500"
+                    : "bg-primary text-white hover:bg-primary/90",
                 )}
               >
                 {uploadMutation.isPending || isSaving ? (
@@ -377,11 +428,17 @@ export default function PhotoVideoUploadForm() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                       ></path>
                     </svg>
-                    <span className="text-current">{uploadMutation.isPending ? "Uploading..." : "Saving..."}</span>
+                    <span className="text-current">
+                      {uploadMutation.isPending ? "Uploading..." : "Saving..."}
+                    </span>
                   </div>
                 ) : (
                   <span className="text-lg font-semibold">
-                    {!form.watch("images")?.length ? "Add at least one photo" : "Next"}
+                    {!form.watch("images")?.length
+                      ? "Add at least one photo"
+                      : isEditMode
+                      ? "Update Photos"
+                      : "Next"}
                   </span>
                 )}
               </button>
@@ -389,6 +446,26 @@ export default function PhotoVideoUploadForm() {
           </div>
         </div>
       </div>
+
+      {/* Success Dialog for Edit Mode */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Photos &amp; Video Updated Successfully</DialogTitle>
+            <DialogDescription>
+              Your car photos and video have been updated successfully.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => router.push(`/dashboard/cars/${car_id}`)}
+              className="bg-primary text-white rounded px-4 py-2"
+            >
+              Go to Car Details
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

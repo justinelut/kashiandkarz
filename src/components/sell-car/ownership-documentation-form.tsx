@@ -1,10 +1,10 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { z } from "zod"
 import { ChevronLeft, ChevronRight, FileTextIcon } from "lucide-react"
 import { toast } from "sonner"
@@ -15,7 +15,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { saveOwnershipDocumentation } from "@/lib/actions"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { saveOwnershipDocumentation, getCarInformation } from "@/lib/actions"
 import { useCarStore } from "@/store/car-store"
 
 const formSchema = z.object({
@@ -30,11 +31,42 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function OwnershipDocumentationForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const mode = searchParams.get("mode")
+  const id = searchParams.get("id")
+  const isEditMode = mode === "edit" && id
+
+  // Local state for the success dialog in edit mode
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
 
   // Zustand store
   const car_id = useCarStore((state) => state.car_id)
   const ownership = useCarStore((state) => state.ownership)
   const setOwnership = useCarStore((state) => state.setOwnership)
+  const setCarId = useCarStore((state) => state.setCarId)
+
+  // Fetch car data in edit mode and update the store
+  useEffect(() => {
+    const fetchCarData = async () => {
+      if (isEditMode && id) {
+        const { success, data } = await getCarInformation(id)
+        if (success && data) {
+          setOwnership({
+            vin: data.vin || "",
+            registration_number: data.registration_number || "",
+            logbook_availability: data.logbook_availability || "yes",
+            previous_owners: data.previous_owners || "0",
+            insurance_status: data.insurance_status || "valid",
+          })
+          setCarId(id)
+        } else {
+          toast.error("Failed to fetch car information")
+          router.push("/dashboard/cars")
+        }
+      }
+    }
+    fetchCarData()
+  }, [isEditMode, id, setOwnership, setCarId, router])
 
   // Validate that we have a car ID
   useEffect(() => {
@@ -42,9 +74,9 @@ export default function OwnershipDocumentationForm() {
       toast.error("No car information found", {
         description: "Please start from the beginning to add a new car.",
       })
-      router.push("/sell-car")
+      router.push(isEditMode ? "/dashboard/cars" : "/sell-car")
     }
-  }, [car_id, router])
+  }, [car_id, router, isEditMode])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -71,10 +103,14 @@ export default function OwnershipDocumentationForm() {
     },
     onSuccess: (result) => {
       if (result.success) {
-        toast.success("Ownership documentation saved", {
-          description: "Ownership documentation has been saved successfully.",
-        })
-        router.push("/dashboard/cars/new/photo-video")
+        if (isEditMode) {
+          setShowSuccessDialog(true)
+        } else {
+          toast.success("Ownership documentation saved", {
+            description: "Ownership documentation has been saved successfully.",
+          })
+          router.push("/sell-car/step-3")
+        }
       } else {
         toast.error("Error saving ownership documentation", {
           description: result.error || "An error occurred while saving ownership documentation.",
@@ -106,158 +142,183 @@ export default function OwnershipDocumentationForm() {
   }
 
   return (
-    <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-muted/50 shadow-lg">
-      <CardHeader className="space-y-1 bg-muted/30 px-6 py-5">
-        <div className="flex items-center space-x-2">
-          <div className="rounded-full bg-primary/10 p-1.5">
-            <FileTextIcon className="h-5 w-5 text-primary" />
-          </div>
-          <CardTitle className="text-xl">Ownership & Documentation</CardTitle>
-        </div>
-        <CardDescription>Provide details about the vehicle's ownership and documentation</CardDescription>
-      </CardHeader>
-      <CardContent className="p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="vin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base">VIN (Vehicle Identification Number)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter 17-character VIN"
-                        className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>The VIN is a 17-character code unique to your vehicle</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="registration_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base">Registration Number</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., ABC 123D"
-                        className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <>
+      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-muted/50 shadow-lg">
+        <CardHeader className="space-y-1 bg-muted/30 px-6 py-5">
+          <div className="flex items-center space-x-2">
+            <div className="rounded-full bg-primary/10 p-1.5">
+              <FileTextIcon className="h-5 w-5 text-primary" />
             </div>
+            <CardTitle className="text-xl">Ownership & Documentation</CardTitle>
+          </div>
+          <CardDescription>
+            Provide details about the vehicle's ownership and documentation
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="vin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base">VIN (Vehicle Identification Number)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter 17-character VIN"
+                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>The VIN is a 17-character code unique to your vehicle</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="registration_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base">Registration Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., ABC 123D"
+                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <FormField
-              control={form.control}
-              name="logbook_availability"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel className="text-base">Logbook Availability</FormLabel>
-                  <FormControl>
-                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="yes" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Yes</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="no" />
-                        </FormControl>
-                        <FormLabel className="font-normal">No</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="previous_owners"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base">Number of Previous Owners</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+              <FormField
+                control={form.control}
+                name="logbook_availability"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel className="text-base">Logbook Availability</FormLabel>
                     <FormControl>
-                      <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
-                        <SelectValue placeholder="Select number of previous owners" />
-                      </SelectTrigger>
+                      <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="yes" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="no" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
                     </FormControl>
-                    <SelectContent>
-                      {[0, 1, 2, 3, 4, "5+"].map((number) => (
-                        <SelectItem key={number} value={number.toString()}>
-                          {number}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="insurance_status"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel className="text-base">Insurance Status</FormLabel>
-                  <FormControl>
-                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="valid" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Valid</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="expired" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Expired</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="none" />
-                        </FormControl>
-                        <FormLabel className="font-normal">None</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-between border-t bg-muted/20 px-6 py-4">
-        <Button variant="outline" onClick={() => router.push("/sell-car/step-3")} className="gap-2">
-          <ChevronLeft className="h-4 w-4" /> Back
-        </Button>
-        <Button
-          onClick={form.handleSubmit(onSubmit)}
-          disabled={isPending}
-          className="gap-2 bg-primary px-6 text-primary-foreground hover:bg-primary/90"
-        >
-          {isPending ? "Saving..." : "Continue"}
-          {!isPending && <ChevronRight className="h-4 w-4" />}
-        </Button>
-      </CardFooter>
-    </Card>
+              <FormField
+                control={form.control}
+                name="previous_owners"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base">Number of Previous Owners</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
+                          <SelectValue placeholder="Select number of previous owners" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {[0, 1, 2, 3, 4, "5+"].map((number) => (
+                          <SelectItem key={number} value={number.toString()}>
+                            {number}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="insurance_status"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel className="text-base">Insurance Status</FormLabel>
+                    <FormControl>
+                      <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="valid" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Valid</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="expired" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Expired</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="none" />
+                          </FormControl>
+                          <FormLabel className="font-normal">None</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex justify-between border-t bg-muted/20 px-6 py-4">
+          <Button
+            variant="outline"
+            onClick={() =>
+              router.push(isEditMode ? `/dashboard/cars/${car_id}` : "/sell-car/step-3")
+            }
+            className="gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" /> Back
+          </Button>
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={isPending}
+            className="gap-2 bg-primary px-6 text-primary-foreground hover:bg-primary/90"
+          >
+            {isPending ? "Saving..." : isEditMode ? "Update Documentation" : "Continue"}
+            {!isPending && <ChevronRight className="h-4 w-4" />}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Documentation Updated Successfully</DialogTitle>
+            <DialogDescription>
+              Your ownership and documentation details have been updated successfully.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => router.push(`/dashboard/cars/${car_id}`)}>
+              Go to Car Details
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
-

@@ -48,13 +48,13 @@ export default function CarDetails({ car }: CarDetailsProps) {
         router.push(`/dashboard/cars/new?id=${car.$id}&mode=edit`)
         break
       case "specifications":
-        router.push(`/dashboard/cars/new/car-specifications?id=${car.$id}&mode=edit`)
+        router.push(`/dashboard/cars/new/car-specification?id=${car.$id}&mode=edit`)
         break
       case "features":
         router.push(`/dashboard/cars/new/car-features?id=${car.$id}&mode=edit`)
         break
       case "ownership":
-        router.push(`/dashboard/cars/new/car-ownership?id=${car.$id}&mode=edit`)
+        router.push(`/dashboard/cars/new/ownership?id=${car.$id}&mode=edit`)
         break
       case "pricing":
         router.push(`/dashboard/cars/new/pricing?id=${car.$id}&mode=edit`)
@@ -324,7 +324,7 @@ export default function CarDetails({ car }: CarDetailsProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Vehicle Details</h3>
           <button
-            onClick={() => navigateToEdit("specifications")}
+            onClick={() => navigateToEdit("ownership")}
             className="p-1.5 rounded-full hover:bg-muted transition-colors"
             title="Edit specifications"
           >

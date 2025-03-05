@@ -4,17 +4,18 @@ import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { z } from "zod"
 import { ChevronRight } from "lucide-react"
 import { toast } from "sonner"
+import { useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { saveBasicCarInfo } from "@/lib/actions"
+import { saveBasicCarInfo, updateBasicCarInfo, getCarInformation } from "@/lib/actions"
 import { CarMakeSelector } from "./car-make-selector"
 import { useCarStore } from "@/store/car-store"
 import { Textarea } from "../ui/textarea"
@@ -60,66 +61,92 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function BasicCarInfoForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const mode = searchParams.get("mode")
+  const id = searchParams.get("id")
+  const isEditMode = mode === "edit" && id
 
-  // Zustand store
-  const selected_make = useCarStore((state) => state.selected_make)
-  const setCarId = useCarStore((state) => state.setCarId)
-  const setBasicInfo = useCarStore((state) => state.setBasicInfo)
-  const basic_info = useCarStore((state) => state.basic_info)
+  const { basic_info, setBasicInfo, car_id, setCarId, selected_make, setSelectedMake, clearStore } = useCarStore()
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Set initial values from store
+  useEffect(() => {
+    if (basic_info) {
+      form.reset(basic_info)
+    }
+  }, [basic_info])
+
+  // Fetch initial data in edit mode
+  useEffect(() => {
+    const fetchCarData = async () => {
+      if (isEditMode) {
+        setIsLoading(true)
+        const { success, data } = await getCarInformation(id)
+        if (success && data) {
+          setBasicInfo({
+            car_make: data.make,
+            car_model: data.car_model,
+            year: data.year.toString(),
+            vehicle_type: data.vehicle_type,
+            condition: data.condition,
+            description: data.description,
+            title: data.title
+          })
+          setCarId(id)
+        } else {
+          toast.error("Failed to fetch car information")
+          router.push("/dashboard/cars")
+        }
+        setIsLoading(false)
+      }
+    }
+
+    fetchCarData()
+  }, [isEditMode, id])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: basic_info?.title || "",
-      car_make: basic_info?.car_make || "",
-      car_model: basic_info?.car_model || "",
-      year: basic_info?.year || "",
-      vehicle_type: basic_info?.vehicle_type || "",
-      condition: basic_info?.condition || "",
-      description: basic_info?.description || "",
-    },
-  })
-
-  // Pre-fill form with data from store if available
-  useEffect(() => {
-    if (basic_info) {
-      form.setValue("title", basic_info.title || "")
-      form.setValue("car_make", basic_info.car_make)
-      form.setValue("car_model", basic_info.car_model)
-      form.setValue("year", basic_info.year)
-      form.setValue("vehicle_type", basic_info.vehicle_type)
-      form.setValue("condition", basic_info.condition)
-      form.setValue("description", basic_info.description || "")
+    defaultValues: basic_info || {
+      car_make: "",
+      car_model: "",
+      year: "",
+      vehicle_type: "",
+      condition: "",
+      description: "",
+      title: ""
     }
-  }, [basic_info, form])
+  })
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: FormValues) => {
-      // Make sure we have a selected make
       if (!selected_make?.$id) {
         throw new Error("Please select a car make first")
       }
 
-      console.log(data)
-
-      // Save to store first
       setBasicInfo(data)
 
-      // Then save to the database
-      const result = await saveBasicCarInfo(data)
-
-      if (result.success && result.carId) {
-        // Set the car ID in the store
-        setCarId(result.carId)
-        return result
+      if (isEditMode) {
+        const result = await updateBasicCarInfo({ ...data, id: car_id! })
+        if (result.success) {
+          clearStore()
+          return result
+        }
+      } else {
+        const result = await saveBasicCarInfo(data)
+        if (result.success && result.carId) {
+          setCarId(result.carId)
+          router.push("/dashboard/cars/new/car-specification")
+          return result
+        }
       }
-      throw new Error(result.error || "Failed to save car information")
+      throw new Error(result?.error || "Failed to save car information")
     },
     onSuccess: () => {
       toast.success("Success!", {
-        description: "Basic car information has been saved successfully.",
+        description: isEditMode 
+          ? "Car information has been updated successfully."
+          : "Basic car information has been saved successfully.",
       })
-      router.push("/dashboard/cars/new/car-specification")
     },
     onError: (error: Error) => {
       toast.error("Error saving car information", {
@@ -172,9 +199,8 @@ export default function BasicCarInfoForm() {
                     <FormControl>
                       <CarMakeSelector
                         onSelect={(make) => {
-                          if (make) {
-                            field.onChange(make.$id) // Use the database ID
-                          }
+                          field.onChange(make.name);
+                          setSelectedMake(make);
                         }}
                         defaultValue={field.value}
                       />
@@ -306,7 +332,7 @@ export default function BasicCarInfoForm() {
                 "Saving..."
               ) : (
                 <>
-                  Continue
+                  {isEditMode ? "Update" : "Continue"}
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </>
               )}
