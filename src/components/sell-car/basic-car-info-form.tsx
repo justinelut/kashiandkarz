@@ -90,20 +90,15 @@ export default function BasicCarInfoForm() {
         throw new Error("Please select a car make first")
       }
 
-      // Prepare the basic info data with the correct structure
-      const basicInfoData = {
-        ...data,
-        car_make: selected_make.$id, // Use the database ID from the saved make
-        car_model: selected_make.name
-      }
+      
 
-      console.log(basicInfoData)
+      console.log(data)
 
       // Save to store first
-      setBasicInfo(basicInfoData)
+      setBasicInfo(data)
 
       // Then save to the database
-      const result = await saveBasicCarInfo(basicInfoData)
+      const result = await saveBasicCarInfo(data)
 
       if (result.success && result.carId) {
         // Set the car ID in the store
@@ -126,8 +121,7 @@ export default function BasicCarInfoForm() {
   })
 
   function onSubmit(data: FormValues) {
-    console.log(data)
-    // mutate(data)
+    mutate(data)
   }
 
   return (

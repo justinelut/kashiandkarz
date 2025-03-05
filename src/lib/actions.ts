@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { Databases, ID, Client } from "node-appwrite";
+import { Databases, ID, Client, Query, Storage } from "node-appwrite";
 
 // Initialize Appwrite client
 const client = new Client()
@@ -9,6 +9,7 @@ const client = new Client()
 	.setKey(process.env.APPWRITE_API_KEY!); // Use server-side API key
 
 const database = new Databases(client);
+const storage = new Storage(client);
 
 interface CarMake {
 	name: string;
@@ -42,7 +43,7 @@ interface CarFeatures {
 }
 
 interface OwnershipDocumentation {
-	vin: string;
+	vin?: string;
 	registration_number: string;
 	logbook_availability: "yes" | "no";
 	previous_owners: string;
@@ -69,7 +70,10 @@ interface PhotoVideo {
 
 const databaseId = process.env.APPWRITE_DATABASE_ID as string;
 const carmakecollectionsId = "67c72fe00000db170b7b";
-const carinfocollectionId = "67c731e80028573f6eaf"
+const carinfocollectionId = "67c731e80028573f6eaf";
+const exteriorFeatureCollectionId = "67c840c7003442c3231a";
+const interiorFeatureCollectionId = "67c840e000034786123d";
+const safetyFeatureCollectionId = "67c840ee000d9d33ac5f";
 
 export async function saveCarMake(data: CarMake) {
 	try {
@@ -83,24 +87,50 @@ export async function saveCarMake(data: CarMake) {
 				image: data.image,
 			},
 		);
-		return { success: true, data: make };``
+		return { success: true, data: make };
 	} catch (error) {
 		console.error("Error saving car make:", error);
 		return { success: false, error: "Failed to save car make" };
 	}
 }
 
-export async function getCarMakes() {
-	try {
-		const makes = await database.listDocuments(
-			process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-			process.env.NEXT_PUBLIC_APPWRITE_CAR_MAKES_COLLECTION_ID!,
-		);
-		return { success: true, data: makes.documents };
-	} catch (error) {
-		console.error("Error fetching car makes:", error);
-		return { success: false, error: "Failed to fetch car makes" };
-	}
+export async function getCarMakes({
+  cursor = null,
+  search = "",
+  limit = 25,
+}: {
+  cursor?: string | null;
+  search?: string;
+  limit?: number;
+}) {
+  try {
+    const queries: any[] = [];
+
+    // Apply search filter
+    if (search) {
+      queries.push(Query.search("name", search));
+    }
+
+    // Apply cursor for pagination
+    if (cursor) {
+      queries.push(Query.cursorAfter(cursor));
+    }
+
+    // Apply limit
+    queries.push(Query.limit(limit));
+
+    // Fetch from database
+    const response = await database.listDocuments(
+      databaseId,
+      carmakecollectionsId,
+      queries
+    );
+
+    return { success: true, data: response.documents };
+  } catch (error) {
+    console.error("Error fetching car makes:", error);
+    return { success: false, error: "Failed to fetch car makes" };
+  }
 }
 
 export async function saveBasicCarInfo(data: BasicCarInfo) {
@@ -125,8 +155,8 @@ export async function saveCarSpecifications(
 ) {
 	try {
 		const specs = await database.updateDocument(
-			process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-			process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+			databaseId,
+			carinfocollectionId,
 			carId,
 			data,
 		);
@@ -141,8 +171,8 @@ export async function saveCarSpecifications(
 export async function saveCarFeatures(data: CarFeatures, carId: string) {
 	try {
 		const features = await database.updateDocument(
-			process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-			process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+			databaseId,
+			carinfocollectionId,
 			carId,
 			data,
 		);
@@ -160,8 +190,8 @@ export async function saveOwnershipDocumentation(
 ) {
 	try {
 		const docs = await database.updateDocument(
-			process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-			process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+			databaseId,
+			carinfocollectionId,
 			carId,
 			data,
 		);
@@ -176,8 +206,8 @@ export async function saveOwnershipDocumentation(
 export async function savePricingPayment(data: PricingPayment, carId: string) {
 	try {
 		const pricing = await database.updateDocument(
-			process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-			process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+			databaseId,
+			carinfocollectionId,
 			carId,
 			data,
 		);
@@ -197,8 +227,8 @@ export async function savePhotoVideo(data: PhotoVideo, carId: string) {
 		// Here you would first upload the files to storage and get their IDs
 		// Then save the file IDs to the car document
 		const photos = await database.updateDocument(
-			process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-			process.env.NEXT_PUBLIC_APPWRITE_CARS_COLLECTION_ID!,
+			databaseId,
+			carinfocollectionId,
 			carId,
 			data,
 		);
@@ -247,3 +277,69 @@ export const fetchCarModels = async (make: string, searchQuery: string) => {
 		return [];
 	}
 };
+
+export async function getExteriorFeatures() {
+	try {
+		const features = await database.listDocuments(
+			databaseId,
+			exteriorFeatureCollectionId,
+		);
+		return { success: true, data: features.documents };
+	} catch (error) {
+		console.error("Error fetching exterior features:", error);
+		return { success: false, error: "Failed to fetch exterior features" };
+	}
+}
+
+export async function getInteriorFeatures() {
+	try {
+		const features = await database.listDocuments(
+			databaseId,
+			interiorFeatureCollectionId,
+		);
+		return { success: true, data: features.documents };
+	} catch (error) {
+		console.error("Error fetching interior features:", error);
+		return { success: false, error: "Failed to fetch interior features" };
+	}
+}
+
+export async function getSafetyFeatures() {
+	try {
+		const features = await database.listDocuments(
+			databaseId,
+			safetyFeatureCollectionId,
+		);
+		return { success: true, data: features.documents };
+	} catch (error) {
+		console.error("Error fetching safety features:", error);
+		return { success: false, error: "Failed to fetch safety features" };
+	}
+}
+
+export async function uploadFiles(formData: FormData) {
+	try {
+		const files = formData.getAll("files");
+		console.log(files);
+		const uploadPromises = files.map(async (file) => {
+			const uniqueFileId = ID.unique();
+
+			// Directly pass the file to createFile
+			const uploadedFile = await storage.createFile(
+				process.env.APPWRITE_BUCKET_ID as string,
+				uniqueFileId,
+				file // Pass the file directly
+			);
+
+			const fileUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string}/storage/buckets/${process.env.APPWRITE_BUCKET_ID as string}/files/${uploadedFile.$id}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT as string}`;
+
+			return fileUrl;
+		});
+
+		const uploadedFilesUrls = await Promise.all(uploadPromises);
+		return { success: true, data: uploadedFilesUrls };
+	} catch (error) {
+		console.error("Error uploading files:", error);
+		return { success: false, error: "Failed to upload files" };
+	}
+}

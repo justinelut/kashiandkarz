@@ -63,13 +63,11 @@ export function CarDetailsPreview({ carDetails, makeLogo }: CarDetailsPreviewPro
                 {makeLogo && (
                   <div className="relative h-10 w-10 overflow-hidden rounded-md">
                     <Image
-                      src={makeLogo || "/placeholder.svg"}
+                      src={makeLogo}
                       alt={carDetails.make}
                       fill
                       className="object-contain"
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=40&width=40"
-                      }}
+                      
                     />
                   </div>
                 )}

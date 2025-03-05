@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function OwnershipDocumentationPage() {
   return (
-    <div className="container max-w-5xl py-10">
+    <div className="mx-auto container max-w-5xl py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Sell Your Car</h1>
         <p className="mt-2 text-muted-foreground">

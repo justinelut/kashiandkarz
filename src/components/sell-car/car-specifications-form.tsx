@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useEffect } from "react"
 import { z } from "zod"
 import { ChevronLeft, ChevronRight, GaugeIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,20 +16,21 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { saveCarSpecifications } from "@/lib/actions"
+import { useCarStore } from "@/store/car-store"
 
 const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric", "LPG", "CNG", "Other"]
 const transmissionTypes = ["Automatic", "Manual", "CVT", "Semi-Automatic", "Dual-Clutch"]
 const drivetrainTypes = ["FWD", "RWD", "AWD", "4WD"]
 
 const formSchema = z.object({
-  fuelType: z.string().min(1, "Fuel type is required"),
-  transmissionType: z.string().min(1, "Transmission type is required"),
+  fuel_type: z.string().min(1, "Fuel type is required"),
+  transmission_type: z.string().min(1, "Transmission type is required"),
   drivetrain: z.string().min(1, "Drivetrain is required"),
-  engineCapacity: z.string().min(1, "Engine capacity is required"),
+  engine_capacity: z.string().min(1, "Engine capacity is required"),
   horsepower: z.string().min(1, "Horsepower is required"),
   torque: z.string().min(1, "Torque is required"),
   mileage: z.string().optional(),
-  mileageUnit: z.enum(["km", "miles"]).default("km"),
+  mileage_unit: z.enum(["km", "miles"]).default("km"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -35,31 +38,81 @@ type FormValues = z.infer<typeof formSchema>
 export default function CarSpecificationsForm() {
   const router = useRouter()
 
+  // Zustand store
+  const car_id = useCarStore((state) => state.car_id)
+  const specifications = useCarStore((state) => state.specifications)
+  const setSpecifications = useCarStore((state) => state.setSpecifications)
+
+  // Validate that we have a car ID
+  useEffect(() => {
+    if (!car_id) {
+      toast.error("No car information found", {
+        description: "Please start from the beginning to add a new car.",
+      })
+      router.push("/sell-car")
+    }
+  }, [car_id, router])
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fuelType: "",
-      transmissionType: "",
-      drivetrain: "",
-      engineCapacity: "",
-      horsepower: "",
-      torque: "",
-      mileage: "",
-      mileageUnit: "km",
+      fuel_type: specifications?.fuel_type || "",
+      transmission_type: specifications?.transmission_type || "",
+      drivetrain: specifications?.drivetrain || "",
+      engine_capacity: specifications?.engine_capacity || "",
+      horsepower: specifications?.horsepower || "",
+      torque: specifications?.torque || "",
+      mileage: specifications?.mileage || "",
+      mileage_unit: specifications?.mileage_unit || "km",
     },
   })
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: FormValues) => {
-      await saveCarSpecifications(data)
+      if (!car_id) {
+        throw new Error("No car ID found")
+      }
+
+      // Save to store first
+      setSpecifications(data)
+
+      // Then save to database
+      return await saveCarSpecifications(data, car_id)
     },
-    onSuccess: () => {
-      router.push("/sell-car/step-3")
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Specifications saved", {
+          description: "Car specifications have been saved successfully.",
+        })
+        router.push("/dashboard/cars/new/car-features")
+      } else {
+        toast.error("Error saving specifications", {
+          description: result.error || "An error occurred while saving specifications.",
+        })
+      }
+    },
+    onError: (error) => {
+      toast.error("Error saving specifications", {
+        description: "An unexpected error occurred. Please try again.",
+      })
+      console.error("Error saving car specifications:", error)
     },
   })
 
   function onSubmit(data: FormValues) {
     mutate(data)
+  }
+
+  if (!car_id) {
+    return (
+      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-muted/50 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-40">
+            <p>Loading car information...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -79,11 +132,11 @@ export default function CarSpecificationsForm() {
             <div className="grid gap-6 md:grid-cols-3">
               <FormField
                 control={form.control}
-                name="fuelType"
+                name="fuel_type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Fuel Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                           <SelectValue placeholder="Select fuel type" />
@@ -103,11 +156,11 @@ export default function CarSpecificationsForm() {
               />
               <FormField
                 control={form.control}
-                name="transmissionType"
+                name="transmission_type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Transmission Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                           <SelectValue placeholder="Select transmission" />
@@ -131,7 +184,7 @@ export default function CarSpecificationsForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Drivetrain</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                           <SelectValue placeholder="Select drivetrain" />
@@ -154,7 +207,7 @@ export default function CarSpecificationsForm() {
             <div className="grid gap-6 md:grid-cols-3">
               <FormField
                 control={form.control}
-                name="engineCapacity"
+                name="engine_capacity"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Engine Capacity</FormLabel>
@@ -229,15 +282,11 @@ export default function CarSpecificationsForm() {
                 />
                 <FormField
                   control={form.control}
-                  name="mileageUnit"
+                  name="mileage_unit"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex space-x-4"
-                        >
+                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
                           <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl>
                               <RadioGroupItem value="km" />

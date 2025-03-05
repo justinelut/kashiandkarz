@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useEffect } from "react"
 import { z } from "zod"
 import { ChevronLeft, ChevronRight, FileTextIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,13 +16,14 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveOwnershipDocumentation } from "@/lib/actions"
+import { useCarStore } from "@/store/car-store"
 
 const formSchema = z.object({
-  vin: z.string().min(17, "VIN must be 17 characters").max(17, "VIN must be 17 characters"),
-  registrationNumber: z.string().min(1, "Registration number is required"),
-  logbookAvailability: z.enum(["yes", "no"]),
-  previousOwners: z.string().min(1, "Number of previous owners is required"),
-  insuranceStatus: z.enum(["valid", "expired", "none"]),
+  vin: z.string().optional(),
+  registration_number: z.string().min(1, "Registration number is required"),
+  logbook_availability: z.enum(["yes", "no"]),
+  previous_owners: z.string().min(1, "Number of previous owners is required"),
+  insurance_status: z.enum(["valid", "expired", "none"]),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -28,28 +31,78 @@ type FormValues = z.infer<typeof formSchema>
 export default function OwnershipDocumentationForm() {
   const router = useRouter()
 
+  // Zustand store
+  const car_id = useCarStore((state) => state.car_id)
+  const ownership = useCarStore((state) => state.ownership)
+  const setOwnership = useCarStore((state) => state.setOwnership)
+
+  // Validate that we have a car ID
+  useEffect(() => {
+    if (!car_id) {
+      toast.error("No car information found", {
+        description: "Please start from the beginning to add a new car.",
+      })
+      router.push("/sell-car")
+    }
+  }, [car_id, router])
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      vin: "",
-      registrationNumber: "",
-      logbookAvailability: "yes",
-      previousOwners: "0",
-      insuranceStatus: "valid",
+      vin: ownership?.vin || "",
+      registration_number: ownership?.registration_number || "",
+      logbook_availability: ownership?.logbook_availability || "yes",
+      previous_owners: ownership?.previous_owners || "0",
+      insurance_status: ownership?.insurance_status || "valid",
     },
   })
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: FormValues) => {
-      await saveOwnershipDocumentation(data)
+      if (!car_id) {
+        throw new Error("No car ID found")
+      }
+
+      // Save to store first
+      setOwnership(data)
+
+      // Then save to database
+      return await saveOwnershipDocumentation(data, car_id)
     },
-    onSuccess: () => {
-      router.push("/sell-car/step-5")
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Ownership documentation saved", {
+          description: "Ownership documentation has been saved successfully.",
+        })
+        router.push("/dashboard/cars/new/photo-video")
+      } else {
+        toast.error("Error saving ownership documentation", {
+          description: result.error || "An error occurred while saving ownership documentation.",
+        })
+      }
+    },
+    onError: (error) => {
+      toast.error("Error saving ownership documentation", {
+        description: "An unexpected error occurred. Please try again.",
+      })
+      console.error("Error saving ownership documentation:", error)
     },
   })
 
   function onSubmit(data: FormValues) {
     mutate(data)
+  }
+
+  if (!car_id) {
+    return (
+      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-muted/50 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-40">
+            <p>Loading car information...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -87,7 +140,7 @@ export default function OwnershipDocumentationForm() {
               />
               <FormField
                 control={form.control}
-                name="registrationNumber"
+                name="registration_number"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base">Registration Number</FormLabel>
@@ -106,16 +159,12 @@ export default function OwnershipDocumentationForm() {
 
             <FormField
               control={form.control}
-              name="logbookAvailability"
+              name="logbook_availability"
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <FormLabel className="text-base">Logbook Availability</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="yes" />
@@ -137,11 +186,11 @@ export default function OwnershipDocumentationForm() {
 
             <FormField
               control={form.control}
-              name="previousOwners"
+              name="previous_owners"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-base">Number of Previous Owners</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
                         <SelectValue placeholder="Select number of previous owners" />
@@ -162,16 +211,12 @@ export default function OwnershipDocumentationForm() {
 
             <FormField
               control={form.control}
-              name="insuranceStatus"
+              name="insurance_status"
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <FormLabel className="text-base">Insurance Status</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="valid" />
