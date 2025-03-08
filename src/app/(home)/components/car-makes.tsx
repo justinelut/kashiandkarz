@@ -10,7 +10,7 @@ export const metadata = {
 
 export default async function CarManufacturersPage() {
   // Fetch car makes on the server
-  const carMakes = await getCarMakes({});
+  const carMakes = await getCarMakes({limit: 30});
 
   console.log(carMakes)
   

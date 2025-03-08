@@ -155,6 +155,8 @@ export const getCarMakes = async ({
 	search?: string;
 	limit?: number;
 }) => {
+	console.log(search)
+	console.log(cursor)
 	try {
 		const queries: any[] = [];
 

@@ -13,7 +13,7 @@ export default function Home() {
       <BrowseInventory />
       <CarManufacturersPage />
       <Testimonials />
-      <CarBrandsCarousel />
+      {/* <CarBrandsCarousel /> */}
     </div>
   );
 }

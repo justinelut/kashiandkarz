@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function ManufacturersPage() {
   // Fetch initial car makes data on the server
-  const initialData = await getCarMakes({limit:30});
+  const initialData = await getCarMakes({limit: 30});
 
  
   
@@ -20,7 +20,7 @@ export default async function ManufacturersPage() {
       <h1 className="text-3xl md:text-4xl font-bold mb-8">Browse by car manufacturer</h1>
       
       <Suspense fallback={<div className="flex justify-center py-12"><CarManufacturersLoading /></div>}>
-        <CarManufacturersClient initialData={initialData.data} />
+        <CarManufacturersClient initialData={initialData} />
       </Suspense>
     </main>
   );

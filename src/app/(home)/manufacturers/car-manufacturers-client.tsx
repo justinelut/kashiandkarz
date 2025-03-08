@@ -1,4 +1,3 @@
-// components/car-manufacturers-client.tsx
 "use client";
 
 import { useRef, useCallback, useMemo } from "react";
@@ -7,20 +6,17 @@ import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getCarMakes } from "@/lib/actions";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useDebounce } from "use-debounce";
 
+
 export default function CarManufacturersClient({ initialData }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch] = useDebounce(searchQuery, 300);
-  const observer = useRef(null);
+  const [debouncedSearch] = useDebounce(searchQuery, 500)
+  const observer = useRef<IntersectionObserver | null>(null);
   
-
-
-  console.log(debouncedSearch)
-  // Set up infinite query
   const {
     data,
     fetchNextPage,
@@ -30,11 +26,13 @@ export default function CarManufacturersClient({ initialData }) {
     error,
     refetch
   } = useInfiniteQuery({
-    queryKey: ["car_makes", debouncedSearch],
+    queryKey: ["car_makesnow", debouncedSearch],
     queryFn: async ({ pageParam }) => {
+      console.log(pageParam);
       const response = await getCarMakes({
-        cursor: pageParam,
+        cursor: pageParam as string | null,
         search: debouncedSearch,
+        limit: 20
       });
       
       if (!response.success || !response.data) {
@@ -43,38 +41,40 @@ export default function CarManufacturersClient({ initialData }) {
       
       return response.data;
     },
-    initialPageParam: null,
-    initialData: initialData ? {
-      pages: [initialData],
+    initialPageParam: null as string | null,
+    initialData: {
+      pages: [initialData.data],
       pageParams: [null],
-    } : undefined,
+    },
     getNextPageParam: (lastPage) => lastPage.cursor,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  
+  
   // Intersection observer for infinite scrolling
-  const lastElementRef = useCallback((node) => {
+  const lastElementRef = useCallback((node: HTMLDivElement | null) => {
     if (isFetchingNextPage) return;
     
     if (observer.current) observer.current.disconnect();
     
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasNextPage) {
-        console.log("Intersection observed, fetching next page");
         fetchNextPage();
       }
-    }, {
-      rootMargin: '0px 0px 200px 0px' // Load more when item is 200px from viewport
     });
     
     if (node) observer.current.observe(node);
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   
   // Flatten all manufacturers from all pages
-  const allManufacturers = useMemo(() => {
-    if (!data || !data.pages) return [];
-    return data.pages.flatMap((page) => page.items || page);
-  }, [data]);
+  const allManufacturers = useMemo(
+    () => data?.pages.flatMap((page) => page) || [],
+    [data?.pages]
+  );
+
+  console.log("my data")
+  console.log(allManufacturers)
   
   return (
     <div className="space-y-6">
@@ -95,10 +95,13 @@ export default function CarManufacturersClient({ initialData }) {
       {/* Manufacturers grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
         {allManufacturers.map((make, index) => {
+          // Check if this is the last item to add the ref
+          const isLastItem = index === allManufacturers.length - 1;
+          
           return (
             <div
-              key={`${make.$id || make.id}-${index}`}
-              ref={index === allManufacturers.length - 5 ? lastElementRef : null}
+              key={`${make.$id}-${index}`}
+              ref={isLastItem ? lastElementRef : undefined}
             >
               <Link
                 href={`/manufacturers/${make.slug}`}
@@ -134,7 +137,7 @@ export default function CarManufacturersClient({ initialData }) {
       )}
       
       {/* Empty state */}
-      {allManufacturers.length === 0 && !isLoading && !isFetchingNextPage && (
+      {allManufacturers.length === 0 && !isLoading && (
         <div className="text-center py-16 px-4">
           <div className="mb-4">
             <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
