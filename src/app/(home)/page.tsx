@@ -1,19 +1,25 @@
-import CarBrandsCarousel from "@/components/brands-carousel";
-import BrowseInventory from "@/components/browse-inventory";
-import HeroText from "@/components/hero-text";
-import HeroWithNavbar from "@/components/hero-section";
-import Testimonials from "@/components/testimonials";
-import CarManufacturersPage from "./components/car-makes";
+import { Header } from "@/components/header"
+import { HeroSection } from "@/components/hero-section"
+import { BrowseSection } from "@/components/browse-section"
+import { BigDeals } from "@/components/big-deals"
+import { TrustpilotReviews } from "@/components/trustpilot-reviews"
+import { CarSearch } from "@/components/car-search"
+import { FeaturedCars } from "@/components/featured-cars"
+import { Footer } from "@/components/footer"
 
 export default function Home() {
   return (
-    <div>
-      <HeroWithNavbar />
-      <HeroText />
-      <BrowseInventory />
-      <CarManufacturersPage />
-      <Testimonials />
-      {/* <CarBrandsCarousel /> */}
+   <div>
+      <main className="flex-1">
+        <HeroSection />
+        <BrowseSection />
+        <BigDeals />
+        <TrustpilotReviews />
+        <CarSearch />
+        <FeaturedCars />
+      </main>
+      <Footer />
     </div>
-  );
+  )
 }
+
