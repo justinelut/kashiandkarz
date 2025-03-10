@@ -2,6 +2,8 @@
 import { revalidatePath } from "next/cache";
 import { Databases, ID, Client, Query, Storage } from "node-appwrite";
 
+
+
 // Initialize Appwrite client
 const client = new Client()
 	.setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
@@ -10,122 +12,23 @@ const client = new Client()
 
 const database = new Databases(client);
 const storage = new Storage(client);
-
-interface CarMake {
-	name: string;
-	slug: string;
-	image: string;
-}
-
-interface BasicCarInfo {
-	car_make: string;
-	car_model: string;
-	year: string;
-	vehicle_type: string;
-	condition: string;
-	description: string;
-	title: string;
-}
-
-interface CarSpecifications {
-	fuel_type: string;
-	transmission_type: string;
-	drivetrain: string;
-	engine_capacity: string;
-	horsepower: string;
-	torque: string;
-	mileage?: string;
-	mileage_unit: "km" | "miles";
-	color?: string;
-}
-
-interface CarFeatures {
-	exterior_features?: string[];
-	interior_features?: string[];
-	safety_features?: string[];
-}
-
-interface OwnershipDocumentation {
-	vin?: string;
-	registration_number: string;
-	logbook_availability: "yes" | "no";
-	previous_owners: string;
-	insurance_status: "valid" | "expired" | "none";
-}
-
-interface PhotoVideo {
-	images?: string[];
-	video?: string;
-}
-
-interface PricingPayment {
-	selling_price: string;
-	currency: string;
-	negotiable: "yes" | "no";
-	installment_plans: "yes" | "no";
-	payment_methods: string[];
-}
-
-interface ReviewSubmit {
-	status: "published" | "draft";
-	availability: boolean;
-	slug: string;
-}
-interface UpdateStatus {
-	status: "published" | "draft";
-	availability: boolean;
-	slug: string;
-	featured: string;
-}
-
-interface CarInformation {
-	// Basic Info
-	car_id: string;
-	make: string;
-	model: string;
-	year: number;
-	mileage: number;
-	color: string;
-
-	transmission: string;
-	fuel_type: string;
-	condition: string;
-	description: string;
-
-	// Features
-	exterior_features: string[];
-	interior_features: string[];
-	safety_features: string[];
-
-	vin?: string;
-	registration_number: string;
-	logbook_availability: "yes" | "no";
-	previous_owners: string;
-	insurance_status: "valid" | "expired" | "none";
-
-	// Pricing
-	selling_price: string;
-	currency: string;
-	negotiable: "yes" | "no";
-	installment_plans: "yes" | "no";
-	payment_methods: string[];
-
-	// Photos & Video
-	images: string[];
-	video?: string;
-
-	// Status
-	status: "draft" | "published";
-	availability: boolean;
-}
-
 const databaseId = process.env.APPWRITE_DATABASE_ID as string;
-const carmakecollectionsId = "67c72fe00000db170b7b";
-const carinfocollectionId = "67c731e80028573f6eaf";
-const exteriorFeatureCollectionId = "67c840c7003442c3231a";
-const interiorFeatureCollectionId = "67c840e000034786123d";
-const safetyFeatureCollectionId = "67c840ee000d9d33ac5f";
-const colorscollectionid = "67c86a92000277171665";
+
+
+const allcarfeaturescollectionid = "67cee7db000302166d7b"
+const specificcarfeaturescollectionid = "67cf1666001ed0b21def"
+const carinfocollectionId = "67cf10af003268a33d9f"
+const carspecificationscollectionid = "67cf13670024a02affcb"
+const carTypeCollectionId = "67cee30c001fd65329ac"
+const carmakecollectionsId = "67c72fe00000db170b7b"
+const carcolorscollectionid = "67c86a92000277171665"
+const ownershipdocumentationcollectionid = "67cf18060032a0e926cd"
+const pricingpaymentcollectionid = "67cf18f100055d893194"
+
+
+
+
+
 
 export async function saveCarMake(data: CarMake) {
 	try {
