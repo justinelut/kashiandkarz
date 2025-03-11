@@ -391,9 +391,9 @@ export async function updateStatus(
 	}
 }
 
-export async function getCarInformation(
+export async function getSingleCarInfo(
 	car_id: string,
-): Promise<{ success: boolean; data: CarInformation | null; error?: string }> {
+): Promise<{ success: boolean; data: CarInfo | null; error?: string }> {
 	try {
 		const databases = new Databases(client);
 
@@ -413,7 +413,7 @@ export async function getCarInformation(
 
 		return {
 			success: true,
-			data: car as CarInformation,
+			data: car as CarInfo,
 		};
 	} catch (error) {
 		console.error("Error fetching car information:", error);

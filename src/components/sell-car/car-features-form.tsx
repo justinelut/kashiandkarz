@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { saveCarFeatures, getExteriorFeatures, getInteriorFeatures, getSafetyFeatures, getCarInformation } from "@/lib/actions"
+import { saveCarFeatures, getExteriorFeatures, getInteriorFeatures, getSafetyFeatures, getSingleCarInfo } from "@/lib/actions"
 import { useCarStore } from "@/store/car-store"
 
 interface Feature {
@@ -49,7 +49,7 @@ export default function CarFeaturesForm() {
   useEffect(() => {
     const fetchCarData = async () => {
       if (isEditMode) {
-        const { success, data } = await getCarInformation(id)
+        const { success, data } = await getSingleCarInfo(id)
         console.log(data)
         if (success && data) {
           setFeatures({

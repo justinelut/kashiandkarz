@@ -47,8 +47,8 @@ import {
 } from "@/components/ui/dialog";
 import {
 	savePricingPayment,
-	getCarInformation,
 	updateCarInfo,
+  getSingleCarInfo,
 } from "@/lib/actions";
 
 const currencies = [
@@ -105,7 +105,7 @@ export default function PricingPaymentForm() {
 	useEffect(() => {
 		const fetchCarData = async () => {
 			if (isEditMode && carId) {
-				const { success, data } = await getCarInformation(carId);
+				const { success, data } = await getSingleCarInfo(carId);
 				if (success && data) {
 					setPricingData({
 						selling_price: data?.selling_price || 0,

@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import {
 	saveOwnershipDocumentation,
-	getCarInformation,
+	getSingleCarInfo,
 	updateCarInfo,
 } from "@/lib/actions";
 
@@ -86,7 +86,7 @@ export default function OwnershipDocumentationForm() {
 	useEffect(() => {
 		const fetchCarData = async () => {
 			if (isEditMode && carId) {
-				const { success, data } = await getCarInformation(carId);
+				const { success, data } = await getSingleCarInfo(carId);
 				if (success && data) {
 					setOwnershipData({
 						vin: data.vin || "",

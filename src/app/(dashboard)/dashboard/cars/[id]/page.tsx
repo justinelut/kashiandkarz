@@ -1,6 +1,6 @@
 import type { Metadata, ResolvingMetadata } from "next"
 import { notFound } from "next/navigation"
-import { getCarInformation } from "@/lib/actions"
+import { getSingleCarInfo } from "@/lib/actions"
 import CarDetails from "@/components/cars/car-details"
 
 type Props = {
@@ -16,7 +16,7 @@ export async function generateMetadata(
   const { id } = await params
   
   // Fetch car data
-  const { success, data } = await getCarInformation(id)
+  const { success, data } = await getSingleCarInfo(id)
   
   // If car not found, use default metadata
   if (!success || !data) {
@@ -43,7 +43,7 @@ export default async function CarPage({ params }: Props) {
   const { id } = await params
   
   // Fetch car data
-  const { success, data, error } = await getCarInformation(id)
+  const { success, data, error } = await getSingleCarInfo(id)
   
   // If car not found, show 404 page
   if (!success || !data) {

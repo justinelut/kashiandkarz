@@ -10,7 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-import { savePhotoVideo, uploadFiles, getCarInformation } from "@/lib/actions";
+import { savePhotoVideo, uploadFiles, getSingleCarInfo } from "@/lib/actions";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import {
@@ -85,7 +85,7 @@ export default function PhotoVideoUploadForm() {
   useEffect(() => {
     const fetchCarData = async () => {
       if (isEditMode && id) {
-        const { success, data } = await getCarInformation(id);
+        const { success, data } = await getSingleCarInfo(id);
         if (success && data) {
           setPhotoData({
             images: data?.images || [],
