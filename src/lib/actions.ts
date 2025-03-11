@@ -1,5 +1,5 @@
 "use server";
-import { CarFeaturesOptions, CarInfo, CarSpecifications, OwnershipDocumentation, PhotoVideo, PricingPayment } from "@/types/types";
+import { CarFeaturesOptions, CarInfo, CarSpecifications, OwnershipDocumentation, PhotoVideo, PricingPayment, ReviewSubmit, UpdateStatus } from "@/types/types";
 import { revalidatePath } from "next/cache";
 import { Databases, ID, Client, Query, Storage } from "node-appwrite";
 
@@ -335,6 +335,16 @@ export async function updateCarInfo(data: CarInfo, carId:string) {
 		return { success: false, error: "Failed to update car info" };
 	}
 }
+export async function deleteCarListing(carId:string) {
+	const databases = new Databases(client);
+	try {
+		const carInfo = await databases.deleteDocument(databaseId, carinfocollectionId, carId);
+		return { success: true, carId: carInfo.$id };
+	} catch (error) {
+		console.error("Error updating car info:", error);
+		return { success: false, error: "Failed to update car info" };
+	}
+}
 
 
 
@@ -348,7 +358,6 @@ export async function saveReviewSubmit(
 		await databases.updateDocument(databaseId, carinfocollectionId, car_id, {
 			status: data.status,
 			availability: data.availability,
-			slug: data.slug,
 		});
 
 		return {
@@ -374,8 +383,9 @@ export async function updateStatus(
 		await databases.updateDocument(databaseId, carinfocollectionId, car_id, {
 			status: data.status,
 			availability: data.availability,
-			slug: data.slug,
+			category: data?.category,
 			featured: data.featured,
+			commercial: data.commercial,
 		});
 
 		return {

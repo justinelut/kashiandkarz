@@ -43,16 +43,14 @@ export default async function CarPage({ params }: Props) {
   const { id } = await params
   
   // Fetch car data
-  const { success, data, error } = await getSingleCarInfo(id)
+  const carinfo = await getSingleCarInfo(id)
   
-  // If car not found, show 404 page
-  if (!success || !data) {
-    notFound()
-  }
+  console.log(carinfo)
+ 
   
   return (
     <div className="container max-w-5xl py-10 mx-auto">
-      <CarDetails car={data} />
+      <CarDetails car={carinfo.data} />
     </div>
   )
 }

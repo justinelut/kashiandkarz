@@ -7,6 +7,7 @@ import { getAllCars } from "@/lib/actions"
 export default async function CarsPage() {
   const cars = await getAllCars()
 
+  console.log(cars)
   // Ensure you have a fallback in case of errors or empty array
   if (!cars || !Array.isArray(cars)) {
     return <p>Error loading cars.</p>

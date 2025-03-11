@@ -221,10 +221,9 @@ export default function ReviewSubmitForm({ carId, carinfo }: ReviewSubmitFormPro
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Create a slug from the title
-      const slug = basic_info.title.toLowerCase().trim().replace(/\s+/g, "-");
+    
       const result = await saveReviewSubmit(
-        { status: "published", availability: true, slug },
+        { status: "published", availability: true},
         carId
       );
       if (result.success) {

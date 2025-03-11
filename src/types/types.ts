@@ -22,10 +22,12 @@ export interface ReviewSubmit {
 }
 
 export interface UpdateStatus {
-	status: "published" | "draft";
-	availability: boolean;
-	slug: string;
-	featured: string;
+	status?: "published" | "draft";
+	availability?: boolean;
+	slug?: string;
+	featured?: string;
+	category?: "sport" | "family" | "luxury";
+	commercial?: boolean;
 }
 
 export interface CarColors {
