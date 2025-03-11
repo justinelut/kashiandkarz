@@ -54,25 +54,24 @@ export function ColorSelector() {
 
   const carColorsData = data?.success ? data.data : []
 
-  // Handle initial load with default value from URL
+  // Handle initial load with default value from URL using the car color's $id
   useEffect(() => {
     const colorFromUrl = searchParams.get("color")
     if (colorFromUrl && carColorsData.length > 0) {
-      const color = carColorsData.find((color: CarColor) => color.name.toLowerCase() === colorFromUrl.toLowerCase())
+      const color = carColorsData.find((color: CarColor) => color.$id === colorFromUrl)
       if (color) {
         setSelectedColor(color)
       }
     }
   }, [searchParams, carColorsData])
 
-  // Handle color selection
+  // Handle color selection: update URL search params with the car color's $id
   const handleColorSelection = (color: CarColor) => {
     setSelectedColor(color)
     setOpen(false)
 
-    // Update URL search params
     const params = new URLSearchParams(searchParams.toString())
-    params.set("color", color.name.toLowerCase())
+    params.set("color", color.$id)
     router.push(`/dashboard/cars/new?${params.toString()}`)
   }
 
@@ -150,4 +149,3 @@ export function ColorSelector() {
     </Popover>
   )
 }
-

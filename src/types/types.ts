@@ -5,24 +5,21 @@ export interface CarMake {
 }
 
 export interface CarType {
-  name: string;
-  slug: string;
-  car_info: CarInfo[];
+	name: string;
+	slug: string;
+	car_info: CarInfo[];
 }
-
 
 export interface PhotoVideo {
 	images?: string[];
 	video?: string;
 }
 
-
 export interface ReviewSubmit {
 	status: "published" | "draft";
 	availability: boolean;
 	slug: string;
 }
-
 
 export interface UpdateStatus {
 	status: "published" | "draft";
@@ -31,13 +28,10 @@ export interface UpdateStatus {
 	featured: string;
 }
 
-
-export interface CarColors{
-  name: string;
-  hex: string;
+export interface CarColors {
+	name: string;
+	hex: string;
 }
-
-
 
 export interface CarInfo {
 	car_make: string;
@@ -54,13 +48,12 @@ export interface CarInfo {
 	video: string;
 	status: "published" | "draft";
 	availability: boolean;
-  car_features: string;
-  car_specifications: string;
-  car_type: string;
-  ownership_documentation: string;
-  pricing_payments: string;
+	car_features: string;
+	car_specifications: string;
+	car_type: string;
+	ownership_documentation: string;
+	pricing_payments: string;
 }
-
 
 export interface CarSpecifications {
 	fuel_type: string;
@@ -90,18 +83,18 @@ export interface CarSpecifications {
 }
 
 export interface CarFeaturesOptions {
-  interior_features: string[];
-  engine: string[];
-  wheels: string[];
-  exterior_features: string[];
-  safety_features: string[];
-  entertainment_features: string[];
-  convenience_features: string[];
-  security_features: string[];
-  sports_car_features: string[];
-  family_car_features: string[];
-  ecofriendly_features: string[];
-  commercial_car_features: string[];
+	interior_features: string[];
+	engine_features: string[];
+	wheels_features: string[];
+	exterior_features: string[];
+	safety_features: string[];
+	entertainment_features: string[];
+	convenience_features: string[];
+	security_features: string[];
+	sports_car_features: string[];
+	family_car_features: string[];
+	ecofriendly_features: string[];
+	commercial_car_features: string[];
 }
 
 export interface OwnershipDocumentation {
@@ -112,9 +105,8 @@ export interface OwnershipDocumentation {
 	insurance_status: "valid" | "expired" | "none";
 }
 
-
 export interface PricingPayment {
-	selling_price: string;
+	selling_price: number;
 	negotiable: "yes" | "no";
 	installment_plans: "yes" | "no";
 	payment_methods: string[];
@@ -123,5 +115,3 @@ export interface PricingPayment {
 	road_tax: string;
 	warranty: string;
 }
-
-

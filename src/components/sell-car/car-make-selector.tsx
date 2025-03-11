@@ -56,25 +56,25 @@ export function CarMakeSelector() {
 
   const carMakesData = data?.success ? data.data : []
 
-  // Handle initial load with default value from URL
+  // Handle initial load with default value from URL using the car make's $id
   useEffect(() => {
     const makeFromUrl = searchParams.get("make")
     if (makeFromUrl && carMakesData.length > 0) {
-      const make = carMakesData.find((make: CarMake) => make.slug === makeFromUrl)
+      const make = carMakesData.find((make: CarMake) => make.$id === makeFromUrl)
       if (make) {
         setSelectedMake(make)
       }
     }
   }, [searchParams, carMakesData])
 
-  // Handle make selection
+  // Handle make selection: update the URL with the make's $id
   const handleMakeSelection = (make: CarMake) => {
     setSelectedMake(make)
     setOpen(false)
 
     // Update URL search params
     const params = new URLSearchParams(searchParams.toString())
-    params.set("make", make.slug)
+    params.set("make", make.$id)
     router.push(`/dashboard/cars/new?${params.toString()}`)
   }
 
@@ -163,4 +163,3 @@ export function CarMakeSelector() {
     </Popover>
   )
 }
-

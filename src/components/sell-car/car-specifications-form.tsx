@@ -1,450 +1,562 @@
-"use client"
+"use client";
 
-import { useRouter, useSearchParams } from "next/navigation"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useEffect, useState } from "react"
-import { z } from "zod"
-import { ChevronLeft, ChevronRight, GaugeIcon } from "lucide-react"
-import { toast } from "sonner"
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { saveCarSpecifications, getCarColors, getCarInformation } from "@/lib/actions"
-import { useCarStore } from "@/store/car-store"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { saveCarSpecifications, updateCarInfo } from "@/lib/actions";
 
-const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric", "LPG", "CNG", "Other"]
-const transmissionTypes = ["Automatic", "Manual", "CVT", "Semi-Automatic", "Dual-Clutch"]
-const drivetrainTypes = ["FWD", "RWD", "AWD", "4WD"]
+const carSpecificationSchema = z.object({
+	// Common Specifications
+	fuel_type: z.string().min(1, "Fuel type is required"),
+	transmission_type: z.string().min(1, "Transmission type is required"),
+	drive_train: z.string().min(1, "Drive train is required"),
+	engine_capacity: z.string().min(1, "Engine capacity is required"),
+	horse_power: z.string().min(1, "Horse power is required"),
+	torque: z.string().min(1, "Torque is required"),
+	mileage: z.string().min(1, "Mileage is required"),
+	mileage_unit: z.enum(["km", "miles"]),
+	doors: z.preprocess(
+		(val) => (val === "" ? undefined : Number(val)),
+		z.number().int().positive("Number of doors must be a positive integer"),
+	),
+	seats: z.preprocess(
+		(val) => (val === "" ? undefined : Number(val)),
+		z.number().int().positive("Number of seats must be a positive integer"),
+	),
+	engine_power: z.string().min(1, "Engine power is required"),
+	top_speed: z.string().min(1, "Top speed is required"),
+	acceleration: z.string().min(1, "Acceleration is required"),
+	co2_emissions: z.string().min(1, "CO2 emissions is required"),
+	fuel_economy: z.string().min(1, "Fuel economy is required"),
 
-const formSchema = z.object({
-  fuel_type: z.string().min(1, "Fuel type is required"),
-  transmission_type: z.string().min(1, "Transmission type is required"),
-  drivetrain: z.string().min(1, "Drivetrain is required"),
-  engine_capacity: z.string().min(1, "Engine capacity is required"),
-  horsepower: z.string().min(1, "Horsepower is required"),
-  torque: z.string().min(1, "Torque is required"),
-  mileage: z.string().optional(),
-  mileage_unit: z.enum(["km", "miles"]).default("km"),
-  color: z.string().min(1, "Color is required"),
-})
+	// Electric Vehicle Specifications (Optional)
+	range: z.string().optional(),
+	battery: z.string().optional(),
+	charging: z.string().optional(),
 
-type FormValues = z.infer<typeof formSchema>
+	// Commercial Vehicle Specifications (Optional)
+	lap_time: z.string().optional(),
+	load_volume: z.string().optional(),
+	payload: z.string().optional(),
+	boot_space: z.string().optional(),
 
-export default function CarSpecificationsForm() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const mode = searchParams.get("mode")
-  const id = searchParams.get("id")
-  const isEditMode = mode === "edit" && id
+	// Additional Ratings (Optional)
+	family_score: z.preprocess(
+		(val) => (val === "" ? undefined : Number(val)),
+		z
+			.number()
+			.min(0, "Family score must be at least 0")
+			.max(10, "Family score must be at most 10")
+			.optional(),
+	),
+	safety_rating: z.preprocess(
+		(val) => (val === "" ? undefined : Number(val)),
+		z
+			.number()
+			.min(0, "Safety rating must be at least 0")
+			.max(5, "Safety rating must be at most 5")
+			.optional(),
+	),
+});
 
-  // Local state for dialog
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+type CarSpecificationFormValues = z.infer<typeof carSpecificationSchema>;
 
-  // Zustand store
-  const car_id = useCarStore((state) => state.car_id)
-  const specifications = useCarStore((state) => state.specifications)
-  const setSpecifications = useCarStore((state) => state.setSpecifications)
-  const setCarId = useCarStore((state) => state.setCarId)
+export default function CarSpecificationForm() {
+	const router = useRouter();
+	const searchParams = useSearchParams();
 
-  // Fetch car data in edit mode
-  useEffect(() => {
-    const fetchCarData = async () => {
-      if (isEditMode && id) {
-        const { success, data } = await getCarInformation(id)
-        if (success && data) {
-          // Assume specifications are nested in data.specifications
-          setSpecifications({
-            fuel_type: data.fuel_type || "",
-            transmission_type: data.transmission_type || "",
-            drivetrain: data.drivetrain || "",
-            engine_capacity: data.engine_capacity || "",
-            horsepower: data.horsepower || "",
-            torque: data.torque || "",
-            mileage: data.mileage || "",
-            mileage_unit: data.mileage_unit || "km",
-          })
-          setCarId(id)
-        } else {
-          toast.error("Failed to fetch car information")
-          router.push("/dashboard/cars")
-        }
-      }
-    }
-    fetchCarData()
-  }, [isEditMode, id, setSpecifications, setCarId, router])
+	const form = useForm<CarSpecificationFormValues>({
+		resolver: zodResolver(carSpecificationSchema),
+		defaultValues: {
+			fuel_type: "",
+			transmission_type: "",
+			drive_train: "",
+			engine_capacity: "",
+			horse_power: "",
+			torque: "",
+			mileage: "",
+			mileage_unit: "km",
+			doors: 4,
+			seats: 5,
+			engine_power: "",
+			top_speed: "",
+			acceleration: "",
+			co2_emissions: "",
+			fuel_economy: "",
+			// Electric Vehicle Specifications
+			range: "",
+			battery: "",
+			charging: "",
+			// Commercial Vehicle Specifications
+			lap_time: "",
+			load_volume: "",
+			payload: "",
+			boot_space: "",
+			// Additional Ratings
+			family_score: "",
+			safety_rating: "",
+		},
+	});
 
-  // Fetch car colors
-  const { data: carColors, isLoading } = useQuery({
-    queryKey: ["carColors"],
-    queryFn: getCarColors,
-  })
+	const { mutate, isPending } = useMutation({
+		mutationFn: async (data: CarSpecificationFormValues) => {
+			const carId = searchParams.get("carId");
+			if (!carId) {
+				throw new Error("Car ID not found. Please start from the beginning.");
+			}
+			const result = await saveCarSpecifications(data);
+			if (result.success) {
+				await updateCarInfo(
+					{
+						car_specifications: result?.data?.$id,
+					},
+					carId,
+				);
+				return { carId, specificationID: result?.data?.$id };
+			}
+			throw new Error(result.error || "Failed to save car specifications");
+		},
 
-  // Validate that we have a car ID
-  useEffect(() => {
-    if (!car_id) {
-      toast.error("No car information found", {
-        description: "Please start from the beginning to add a new car.",
-      })
-      router.push(isEditMode ? "/dashboard/cars" : "/sell-car")
-    }
-  }, [car_id, router, isEditMode])
+		onSuccess: ({ carId, specificationID }) => {
+			toast.success("Success!", {
+				description: "Car specifications saved successfully.",
+			});
+			router.push(
+				`/dashboard/cars/new/car-features?carId=${carId}&specificationID=${specificationID}`,
+			);
+		},
+		onError: (error: Error) => {
+			toast.error("Error saving car specifications", {
+				description:
+					error.message || "Failed to save car specifications. Please try again.",
+			});
+		},
+	});
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      fuel_type: specifications?.fuel_type || "",
-      transmission_type: specifications?.transmission_type || "",
-      drivetrain: specifications?.drivetrain || "",
-      engine_capacity: specifications?.engine_capacity || "",
-      horsepower: specifications?.horsepower || "",
-      torque: specifications?.torque || "",
-      mileage: specifications?.mileage || "",
-      mileage_unit: specifications?.mileage_unit || "km",
-      color: specifications?.color || "",
-    },
-  })
+	function onSubmit(data: CarSpecificationFormValues) {
+		mutate(data);
+	}
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (data: FormValues) => {
-      if (!car_id) {
-        throw new Error("No car ID found")
-      }
+	return (
+		<Form {...form}>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+				{/* Common Specifications */}
+				<h3 className="text-lg font-bold mt-8">Common Specifications</h3>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<FormField
+						control={form.control}
+						name="fuel_type"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Fuel Type</FormLabel>
+								<Select onValueChange={field.onChange} defaultValue={field.value}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="Select fuel type" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										<SelectItem value="petrol">Petrol</SelectItem>
+										<SelectItem value="diesel">Diesel</SelectItem>
+										<SelectItem value="electric">Electric</SelectItem>
+										<SelectItem value="hybrid">Hybrid</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-      // Find the selected color object based on the color name from the form
-      const selectedColor = carColors?.data?.find((c) => c.name === data.color)
+					<FormField
+						control={form.control}
+						name="transmission_type"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Transmission Type</FormLabel>
+								<Select onValueChange={field.onChange} defaultValue={field.value}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="Select transmission type" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										<SelectItem value="manual">Manual</SelectItem>
+										<SelectItem value="automatic">Automatic</SelectItem>
+										<SelectItem value="cvt">CVT</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-      // Save to the store with full color details (name and hex)
-      setSpecifications({
-        ...data,
-        color: selectedColor ? { name: selectedColor.name, hex: selectedColor.hex } : data.color,
-      })
+					<FormField
+						control={form.control}
+						name="drive_train"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Drive Train</FormLabel>
+								<Select onValueChange={field.onChange} defaultValue={field.value}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="Select drive train" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										<SelectItem value="fwd">FWD</SelectItem>
+										<SelectItem value="rwd">RWD</SelectItem>
+										<SelectItem value="awd">AWD</SelectItem>
+										<SelectItem value="4wd">4WD</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-      // Prepare data for DB submission: replace the color field with the $id
-      const submissionData = {
-        ...data,
-        color: selectedColor ? selectedColor.$id : data.color,
-      }
+					<FormField
+						control={form.control}
+						name="engine_capacity"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Engine Capacity (cc)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-      return await saveCarSpecifications(submissionData, car_id)
-    },
-    onSuccess: (result) => {
-      if (result.success) {
-        if (isEditMode) {
-          setShowSuccessDialog(true)
-        } else {
-          toast.success("Specifications saved", {
-            description: "Car specifications have been saved successfully.",
-          })
-          router.push("/dashboard/cars/new/car-features")
-        }
-      } else {
-        toast.error("Error saving specifications", {
-          description: result.error || "An error occurred while saving specifications.",
-        })
-      }
-    },
-    onError: (error: Error) => {
-      toast.error("Error saving specifications", {
-        description: error.message || "An unexpected error occurred. Please try again.",
-      })
-      console.error("Error saving car specifications:", error)
-    },
-  })
+					<FormField
+						control={form.control}
+						name="horse_power"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Horse Power (hp)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-  function onSubmit(data: FormValues) {
-    mutate(data)
-  }
+					<FormField
+						control={form.control}
+						name="torque"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Torque (Nm)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-  if (!car_id || isLoading) {
-    return (
-      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-muted/50 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center h-40">
-            <p>Loading car information...</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+					<FormField
+						control={form.control}
+						name="mileage"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Mileage</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-  return (
-    <>
-      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-muted/50 shadow-lg">
-        <CardHeader className="space-y-1 bg-muted/30 px-6 py-5">
-          <div className="flex items-center space-x-2">
-            <div className="rounded-full bg-primary/10 p-1.5">
-              <GaugeIcon className="h-5 w-5 text-primary" />
-            </div>
-            <CardTitle className="text-xl">Car Specifications</CardTitle>
-          </div>
-          <CardDescription>
-            Provide the technical details and specifications of your vehicle
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-3">
-                <FormField
-                  control={form.control}
-                  name="fuel_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Fuel Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
-                            <SelectValue placeholder="Select fuel type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {fuelTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="transmission_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Transmission Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
-                            <SelectValue placeholder="Select transmission" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {transmissionTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="drivetrain"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Drivetrain</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary">
-                            <SelectValue placeholder="Select drivetrain" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {drivetrainTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+					<FormField
+						control={form.control}
+						name="mileage_unit"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Mileage Unit</FormLabel>
+								<Select onValueChange={field.onChange} defaultValue={field.value}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="Select mileage unit" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										<SelectItem value="km">km</SelectItem>
+										<SelectItem value="miles">miles</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-              <div className="grid gap-6 md:grid-cols-3">
-                <FormField
-                  control={form.control}
-                  name="engine_capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Engine Capacity</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g. 2.0L"
-                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="horsepower"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Horsepower (HP)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g. 180"
-                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="torque"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Torque (Nm)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g. 240"
-                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+					<FormField
+						control={form.control}
+						name="doors"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Number of Doors</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-              <div className="space-y-4">
-                <FormLabel className="text-base">Mileage (if used)</FormLabel>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="mileage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Enter mileage"
-                            className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="mileage_unit"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormControl>
-                          <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
-                            <FormItem className="flex items-center space-x-2 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="km" />
-                              </FormControl>
-                              <FormLabel className="font-normal">Kilometers</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-2 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="miles" />
-                              </FormControl>
-                              <FormLabel className="font-normal">Miles</FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+					<FormField
+						control={form.control}
+						name="seats"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Number of Seats</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel className="text-base">Exterior Color</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-                      >
-                        {carColors?.data?.map((color) => (
-                          <FormItem key={color.name} className="space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value={color.name} id={`color-${color.name}`} className="sr-only" />
-                            </FormControl>
-                            <FormLabel
-                              htmlFor={`color-${color.name}`}
-                              className={cn(
-                                "flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground",
-                                field.value === color.name && "border-primary"
-                              )}
-                            >
-                              <div className="h-10 w-10 rounded-full border" style={{ backgroundColor: color.hex }} />
-                              <span className="mt-2 text-center text-xs">{color.name}</span>
-                            </FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-between border-t bg-muted/20 px-6 py-4">
-          <Button
-            variant="outline"
-            onClick={() =>
-              router.push(isEditMode ? `/dashboard/cars/${car_id}` : "/sell-car")
-            }
-            className="gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" /> Back
-          </Button>
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={isPending}
-            className="gap-2 bg-primary px-6 text-primary-foreground hover:bg-primary/90"
-          >
-            {isPending ? "Saving..." : isEditMode ? "Update Specifications" : "Continue"}
-            {!isPending && <ChevronRight className="h-4 w-4" />}
-          </Button>
-        </CardFooter>
-      </Card>
+					<FormField
+						control={form.control}
+						name="engine_power"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Engine Power (kW)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Specifications Updated Successfully</DialogTitle>
-            <DialogDescription>
-              Your car specifications have been updated successfully.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => router.push(`/dashboard/cars/${car_id}`)}>
-              Go to Car Details
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  )
+					<FormField
+						control={form.control}
+						name="top_speed"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Top Speed (km/h)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="acceleration"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Acceleration (0-100 km/h in seconds)</FormLabel>
+								<FormControl>
+									<Input type="number" step="0.1" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="co2_emissions"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>CO2 Emissions (g/km)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="fuel_economy"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Fuel Economy (L/100km)</FormLabel>
+								<FormControl>
+									<Input type="number" step="0.1" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				{/* Electric Vehicle Specifications */}
+				<h3 className="text-lg font-bold mt-8">
+					Electric Vehicle Specifications (Optional)
+				</h3>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<FormField
+						control={form.control}
+						name="range"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Range (km)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormDescription>For electric vehicles</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="battery"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Battery Capacity (kWh)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormDescription>For electric vehicles</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="charging"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Charging Time (hours)</FormLabel>
+								<FormControl>
+									<Input type="number" step="0.1" {...field} />
+								</FormControl>
+								<FormDescription>For electric vehicles</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				{/* Commercial Vehicle Specifications */}
+				<h3 className="text-lg font-bold mt-8">
+					Commercial Vehicle Specifications (Optional)
+				</h3>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<FormField
+						control={form.control}
+						name="lap_time"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Laptime</FormLabel>
+								<FormControl>
+									<Input type="text" {...field} />
+								</FormControl>
+								<FormDescription>For commercial or racing vehicles</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="load_volume"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Load Volume (L)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="payload"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Payload (kg)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="boot_space"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Boot Space (L)</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				{/* Additional Ratings */}
+				<h3 className="text-lg font-bold mt-8">Additional Ratings (Optional)</h3>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<FormField
+						control={form.control}
+						name="family_score"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Family Score (0-10)</FormLabel>
+								<FormControl>
+									<Input type="number" min="0" max="10" step="0.1" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="safety_rating"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Safety Rating (0-5)</FormLabel>
+								<FormControl>
+									<Input type="number" min="0" max="5" step="0.1" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<Button type="submit" disabled={isPending}>
+					{isPending ? "Saving..." : "Save and Continue"}
+				</Button>
+			</form>
+		</Form>
+	);
 }

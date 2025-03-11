@@ -1,9 +1,7 @@
 "use server";
-import { CarInfo } from "@/types/types";
+import { CarFeaturesOptions, CarInfo, CarSpecifications, OwnershipDocumentation, PhotoVideo, PricingPayment } from "@/types/types";
 import { revalidatePath } from "next/cache";
 import { Databases, ID, Client, Query, Storage } from "node-appwrite";
-
-
 
 // Initialize Appwrite client
 const client = new Client()
@@ -15,67 +13,66 @@ const database = new Databases(client);
 const storage = new Storage(client);
 const databaseId = process.env.APPWRITE_DATABASE_ID as string;
 
-
-const carinfocollectionId = "67cf10af003268a33d9f" //step one create basic deatails, also this is the main collection which we will be updating with other collections ids using relationships
-const specificcarfeaturescollectionid = "67cf1666001ed0b21def" //in relation to the cainfocollection
-const carspecificationscollectionid = "67cf13670024a02affcb" //in relation to the cainfocollection
-const ownershipdocumentationcollectionid = "67cf18060032a0e926cd" //in relation to the cainfocollection
-const pricingpaymentcollectionid = "67cf18f100055d893194" //in relation to the cainfocollection
-
-
+const carinfocollectionId = "67cf10af003268a33d9f"; //step one create basic deatails, also this is the main collection which we will be updating with other collections ids using relationships
+const specificcarfeaturescollectionid = "67cf1666001ed0b21def"; //in relation to the cainfocollection
+const carspecificationscollectionid = "67cf13670024a02affcb"; //in relation to the cainfocollection
+const ownershipdocumentationcollectionid = "67cf18060032a0e926cd"; //in relation to the cainfocollection
+const pricingpaymentcollectionid = "67cf18f100055d893194"; //in relation to the cainfocollection
 
 //the below collections should only be used for fetching data not creating
-const allcarfeaturescollectionid = "67cee7db000302166d7b"
-const carcolorscollectionid = "67c86a92000277171665"
-const carTypeCollectionId = "67cee30c001fd65329ac"
-const carmakecollectionsId = "67c72fe00000db170b7b"
-
+const allcarfeaturescollectionid = "67cee7db000302166d7b";
+const carcolorscollectionid = "67c86a92000277171665";
+const carTypeCollectionId = "67cee30c001fd65329ac";
+const carmakecollectionsId = "67c72fe00000db170b7b";
 
 export const getCarFeatures = async () => {
 	try {
-	  const response = await database.listDocuments(databaseId, allcarfeaturescollectionid)
-  
-	  return { success: true, data: response.documents[0] }
-	} catch (error) {
-	  console.error("Error fetching car features:", error)
-	  return { success: false, error: "Failed to fetch car features" }
-	}
-  }
-  
+		const response = await database.listDocuments(
+			databaseId,
+			allcarfeaturescollectionid,
+		);
 
-  export const getCarTypes = async ({
+		return { success: true, data: response.documents[0] };
+	} catch (error) {
+		console.error("Error fetching car features:", error);
+		return { success: false, error: "Failed to fetch car features" };
+	}
+};
+
+export const getCarTypes = async ({
 	cursor = null,
 	search = "",
 	limit = 25,
-  }: {
-	cursor?: string | null
-	search?: string
-	limit?: number
-  }) => {
+}: {
+	cursor?: string | null;
+	search?: string;
+	limit?: number;
+}) => {
 	try {
-	  const queries: any[] = []
-  
-	  if (search) {
-		queries.push(Query.search("name", search))
-	  }
-  
-	  if (cursor) {
-		queries.push(Query.cursorAfter(cursor))
-	  }
-  
-	  queries.push(Query.limit(limit))
-  
-	  const response = await database.listDocuments(databaseId, carTypeCollectionId, queries)
-  
-	  return { success: true, data: response.documents }
+		const queries: any[] = [];
+
+		if (search) {
+			queries.push(Query.search("name", search));
+		}
+
+		if (cursor) {
+			queries.push(Query.cursorAfter(cursor));
+		}
+
+		queries.push(Query.limit(limit));
+
+		const response = await database.listDocuments(
+			databaseId,
+			carTypeCollectionId,
+			queries,
+		);
+
+		return { success: true, data: response.documents };
 	} catch (error) {
-	  console.error("Error fetching car types:", error)
-	  return { success: false, error: "Failed to fetch car types" }
+		console.error("Error fetching car types:", error);
+		return { success: false, error: "Failed to fetch car types" };
 	}
-  }
-
-
-
+};
 
 export async function saveCarMake(data: CarMake) {
 	try {
@@ -105,8 +102,8 @@ export const getCarMakes = async ({
 	search?: string;
 	limit?: number;
 }) => {
-	console.log(search)
-	console.log(cursor)
+	console.log(search);
+	console.log(cursor);
 	try {
 		const queries: any[] = [];
 
@@ -145,7 +142,6 @@ export async function saveBasicCarInfo(data: CarInfo) {
 			ID.unique(),
 			data,
 		);
-		revalidatePath("/dashboard/cars/new");
 		return { success: true, carId: carInfo.$id };
 	} catch (error) {
 		console.error("Error saving car info:", error);
@@ -153,18 +149,14 @@ export async function saveBasicCarInfo(data: CarInfo) {
 	}
 }
 
-export async function saveCarSpecifications(
-	data: CarSpecifications,
-	carId: string,
-) {
+export async function saveCarSpecifications(data: CarSpecifications) {
 	try {
-		const specs = await database.updateDocument(
+		const specs = await database.createDocument(
 			databaseId,
-			carinfocollectionId,
-			carId,
+			carspecificationscollectionid,
+			ID.unique(),
 			data,
 		);
-		revalidatePath("/dashboard/cars/new/car-specification");
 		return { success: true, data: specs };
 	} catch (error) {
 		console.error("Error saving car specifications:", error);
@@ -172,15 +164,14 @@ export async function saveCarSpecifications(
 	}
 }
 
-export async function saveCarFeatures(data: CarFeatures, carId: string) {
+export async function saveCarFeatures(data: CarFeaturesOptions) {
 	try {
-		const features = await database.updateDocument(
+		const features = await database.createDocument(
 			databaseId,
-			carinfocollectionId,
-			carId,
+			specificcarfeaturescollectionid,
+			ID.unique(),
 			data,
 		);
-		revalidatePath("/dashboard/cars/new/car-features");
 		return { success: true, data: features };
 	} catch (error) {
 		console.error("Error saving car features:", error);
@@ -190,16 +181,14 @@ export async function saveCarFeatures(data: CarFeatures, carId: string) {
 
 export async function saveOwnershipDocumentation(
 	data: OwnershipDocumentation,
-	carId: string,
 ) {
 	try {
-		const docs = await database.updateDocument(
+		const docs = await database.createDocument(
 			databaseId,
-			carinfocollectionId,
-			carId,
+			ownershipdocumentationcollectionid,
+			ID.unique(),
 			data,
 		);
-		revalidatePath("/dashboard/cars/new/ownership");
 		return { success: true, data: docs };
 	} catch (error) {
 		console.error("Error saving ownership documentation:", error);
@@ -207,15 +196,14 @@ export async function saveOwnershipDocumentation(
 	}
 }
 
-export async function savePricingPayment(data: PricingPayment, carId: string) {
+export async function savePricingPayment(data: PricingPayment) {
 	try {
-		const pricing = await database.updateDocument(
+		const pricing = await database.createDocument(
 			databaseId,
-			carinfocollectionId,
-			carId,
+			pricingpaymentcollectionid,
+			ID.unique(),
 			data,
 		);
-		revalidatePath("/dashboard/cars/new/pricing");
 		return { success: true, data: pricing };
 	} catch (error) {
 		console.error("Error saving pricing and payment options:", error);
@@ -226,25 +214,22 @@ export async function savePricingPayment(data: PricingPayment, carId: string) {
 	}
 }
 
-export async function savePhotoVideo(data: PhotoVideo, carId: string) {
+export async function savePhotoVideo(data: CarInfo, carId: string) {
+	console.log(data)
+	console.log(carId)
 	try {
-		// Here you would first upload the files to storage and get their IDs
-		// Then save the file IDs to the car document
 		const photos = await database.updateDocument(
 			databaseId,
 			carinfocollectionId,
 			carId,
 			data,
 		);
-		revalidatePath("/dashboard/cars/new/photos");
 		return { success: true, data: photos };
 	} catch (error) {
 		console.error("Error saving photo and video data:", error);
 		return { success: false, error: "Failed to save photo and video data" };
 	}
 }
-
-
 
 export async function getExteriorFeatures() {
 	try {
@@ -338,6 +323,20 @@ export async function uploadFiles(formData: FormData) {
 		return { success: false, error: "Failed to upload files" };
 	}
 }
+
+
+export async function updateCarInfo(data: CarInfo, carId:string) {
+	const databases = new Databases(client);
+	try {
+		const carInfo = await databases.updateDocument(databaseId, carinfocollectionId, carId, data);
+		return { success: true, carId: carInfo.$id };
+	} catch (error) {
+		console.error("Error updating car info:", error);
+		return { success: false, error: "Failed to update car info" };
+	}
+}
+
+
 
 export async function saveReviewSubmit(
 	data: ReviewSubmit,

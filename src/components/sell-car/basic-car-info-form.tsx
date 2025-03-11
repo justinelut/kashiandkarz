@@ -1,153 +1,390 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CarMakeSelector } from "@/components/sell-car/car-make-selector";
-import { CarTypeSelector } from "@/components/sell-car/car-type-selector";
-import { ColorSelector } from "@/components/sell-car/color-selector";
+import { useMutation } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { ChevronRight } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { saveBasicCarInfo } from "@/lib/actions";
-import type { CarInfo } from "@/types/types";
+import { CarMakeSelector } from "@/components/sell-car/car-make-selector";
+import { CarTypeSelector } from "@/components/sell-car/car-type-selector";
+import { ColorSelector } from "@/components/sell-car/color-selector";
 
-const schema = z.object({
-	car_make: z.string().min(1, "Car make is required"),
-	car_model: z.string().min(1, "Car model is required"),
-	year: z.string().regex(/^\d{4}$/, "Year must be a 4-digit number"),
-	vehicle_type: z.string().min(1, "Vehicle type is required"),
-	condition: z.enum(["new", "used"]),
-	description: z.string().min(10, "Description must be at least 10 characters"),
-	title: z.string().min(5, "Title must be at least 5 characters"),
-	color: z.string().min(1, "Color is required"),
-	big_deal: z.boolean(),
-	status: z.enum(["published", "draft"]),
-	availability: z.boolean(),
+
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 50 }, (_, i) => (currentYear - i).toString());
+
+// Helper function to create slug from title
+const slugify = (text: string): string => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')        // Replace spaces with -
+    .replace(/&/g, '-and-')      // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '')    // Remove all non-word characters
+    .replace(/\-\-+/g, '-')      // Replace multiple - with single -
+    .replace(/^-+/, '')          // Trim - from start of text
+    .replace(/-+$/, '');         // Trim - from end of text
+};
+
+const formSchema = z.object({
+  car_make: z.string().min(1, "Car make is required"),
+  car_model: z.string().min(1, "Car model is required"),
+  year: z.string().regex(/^\d{4}$/, "Year must be a 4-digit number"),
+  car_type: z.string().min(1, "Vehicle type is required"),
+  condition: z.enum(["Brand New", "Used", "Certified Pre-Owned"], {
+    errorMap: () => ({ message: "Condition is required" }),
+  }),
+  description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
+  title: z.string().min(10, "Title must be at least 10 characters").max(100, "Title must be less than 100 characters"),
+  color: z.string().min(1, "Color is required"),
+  big_deal: z.boolean().default(false),
+  status: z.enum(["published", "draft"]).default("draft"),
+  availability: z.boolean().default(true),
 });
 
-export function BasicCarInfoForm() {
-	const router = useRouter();
-	const searchParams = useSearchParams();
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-		setValue,
-	} = useForm<CarInfo>({
-		resolver: zodResolver(schema),
-	});
+type FormValues = z.infer<typeof formSchema>;
 
-	useEffect(() => {
-		// Set initial values from URL params
-		setValue("car_make", searchParams.get("make") || "");
-		setValue("vehicle_type", searchParams.get("type") || "");
-		setValue("color", searchParams.get("color") || "");
-	}, [searchParams, setValue]);
+export default function BasicCarInfoForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-	const onSubmit = async (data: CarInfo) => {
-		const result = await saveBasicCarInfo(data);
-		if (result.success) {
-			console.log("Car info saved successfully:", result.carId);
-			// Redirect to next step or show success message
-		} else {
-			console.error("Failed to save car info:", result.error);
-			// Show error message to user
-		}
-	};
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      car_make: "",
+      car_model: "",
+      year: "",
+      car_type: "",
+      condition: undefined,
+      description: "",
+      color: "",
+      big_deal: false,
+      status: "draft",
+      availability: true,
+    },
+  });
 
-	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div>
-					<CarMakeSelector />
-					{errors.car_make && (
-						<p className="text-red-500 text-sm mt-1">{errors.car_make.message}</p>
-					)}
-				</div>
-				<div>
-					<Input
-						{...register("car_model")}
-						placeholder="Car Model"
-						className="w-full"
-					/>
-					{errors.car_model && (
-						<p className="text-red-500 text-sm mt-1">{errors.car_model.message}</p>
-					)}
-				</div>
-				<div>
-					<Input {...register("year")} placeholder="Year" className="w-full" />
-					{errors.year && (
-						<p className="text-red-500 text-sm mt-1">{errors.year.message}</p>
-					)}
-				</div>
-				<div>
-					<CarTypeSelector />
-					{errors.vehicle_type && (
-						<p className="text-red-500 text-sm mt-1">{errors.vehicle_type.message}</p>
-					)}
-				</div>
-				<div>
-					<select
-						{...register("condition")}
-						className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					>
-						<option value="">Select Condition</option>
-						<option value="new">New</option>
-						<option value="used">Used</option>
-					</select>
-					{errors.condition && (
-						<p className="text-red-500 text-sm mt-1">{errors.condition.message}</p>
-					)}
-				</div>
-				<div>
-					<ColorSelector />
-					{errors.color && (
-						<p className="text-red-500 text-sm mt-1">{errors.color.message}</p>
-					)}
-				</div>
-			</div>
-			<div>
-				<Input {...register("title")} placeholder="Title" className="w-full" />
-				{errors.title && (
-					<p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-				)}
-			</div>
-			<div>
-				<Textarea
-					{...register("description")}
-					placeholder="Description"
-					className="w-full min-h-[100px]"
-				/>
-				{errors.description && (
-					<p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
-				)}
-			</div>
-			<div className="flex items-center space-x-4">
-				<Switch {...register("big_deal")} id="big-deal" />
-				<label htmlFor="big-deal">Big Deal</label>
-			</div>
-			<div className="flex items-center space-x-4">
-				<Switch {...register("availability")} id="availability" />
-				<label htmlFor="availability">Available</label>
-			</div>
-			<div>
-				<select
-					{...register("status")}
-					className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<option value="draft">Draft</option>
-					<option value="published">Published</option>
-				</select>
-			</div>
-			<Button type="submit" className="w-full">
-				Save Basic Info
-			</Button>
-		</form>
-	);
+  // Pre-fill form with data from URL params if available
+  useEffect(() => {
+    const urlMake = searchParams.get("make");
+    const urlType = searchParams.get("type");
+    const urlColor = searchParams.get("color");
+
+    if (urlMake) form.setValue("car_make", urlMake);
+    if (urlType) form.setValue("car_type", urlType);
+    if (urlColor) form.setValue("color", urlColor);
+  }, [form, searchParams]);
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (data: FormValues) => {
+      // Generate slug from title before submission
+      const slug = slugify(data.title);
+      
+      // Add slug to data
+      const dataWithSlug = {
+        ...data,
+        slug
+      };
+      
+      console.log("Submitting data:", dataWithSlug);
+
+      // Save to the database
+      const result = await saveBasicCarInfo(dataWithSlug);
+
+      if (result.success && result.carId) {
+        return result;
+      }
+      throw new Error(result.error || "Failed to save car information");
+    },
+    onSuccess: (data) => {
+      toast.success("Success!", {
+        description: "Basic car information has been saved successfully.",
+      });
+      // Navigate to the next step with carId in URL
+      router.push(`/dashboard/cars/new/car-specification?carId=${data.carId}`);
+    },
+    onError: (error: Error) => {
+      toast.error("Error saving car information", {
+        description: error.message || "An error occurred while saving car information.",
+      });
+    },
+  });
+
+  function onSubmit(data: FormValues) {
+    mutate(data);
+  }
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Basic Car Information</CardTitle>
+        <CardDescription>
+          Let&apos;s start with the basic information about your car. This will help buyers find your listing more easily.
+        </CardDescription>
+      </CardHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <CardContent className="space-y-8">
+            {/* Title Field */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base">Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter a catchy title for your listing (e.g., 2018 Rolls-Royce Ghost in Jet Black)"
+                      className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="car_make"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="text-base">Make (Brand)</FormLabel>
+                    <FormControl>
+                      <CarMakeSelector
+                        onSelect={(make) => {
+                          if (make) {
+                            field.onChange(make.$id); // Use the database ID
+                          }
+                        }}
+                        defaultValue={field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="car_model"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base">Model</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter car model"
+                        className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <FormField
+                control={form.control}
+                name="year"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base">Year</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select year" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="car_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base">Vehicle Type</FormLabel>
+                    <FormControl>
+                      <CarTypeSelector
+                        onSelect={(type) => {
+                          if (type) {
+                            field.onChange(type);
+                          }
+                        }}
+                        defaultValue={field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="condition"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base">Condition</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select condition" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Brand New">Brand New</SelectItem>
+                        <SelectItem value="Used">Used</SelectItem>
+                        <SelectItem value="Certified Pre-Owned">Certified Pre-Owned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base">Color</FormLabel>
+                  <FormControl>
+                    <ColorSelector
+                      onSelect={(color) => {
+                        if (color) {
+                          field.onChange(color);
+                        }
+                      }}
+                      defaultValue={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base">Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Provide a detailed description of your vehicle..."
+                      className="min-h-[120px] w-full rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <FormField
+                control={form.control}
+                name="big_deal"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Featured Listing</FormLabel>
+                      <p className="text-sm text-muted-foreground">Mark this car as a Big Deal</p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="availability"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Availability</FormLabel>
+                      <p className="text-sm text-muted-foreground">Is this car currently available?</p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base">Listing Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" type="button" disabled={isPending}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? (
+                "Saving..."
+              ) : (
+                <>
+                  Continue
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </form>
+      </Form>
+    </Card>
+  );
 }
-
-export default BasicCarInfoForm;

@@ -54,25 +54,24 @@ export function CarTypeSelector() {
 
   const carTypesData = data?.success ? data.data : []
 
-  // Handle initial load with default value from URL
+  // Handle initial load with default value from URL using the car type's $id
   useEffect(() => {
     const typeFromUrl = searchParams.get("type")
     if (typeFromUrl && carTypesData.length > 0) {
-      const type = carTypesData.find((type: CarType) => type.slug === typeFromUrl)
+      const type = carTypesData.find((type: CarType) => type.$id === typeFromUrl)
       if (type) {
         setSelectedType(type)
       }
     }
   }, [searchParams, carTypesData])
 
-  // Handle type selection
+  // Handle type selection: update the URL search params with the car type's $id
   const handleTypeSelection = (type: CarType) => {
     setSelectedType(type)
     setOpen(false)
 
-    // Update URL search params
     const params = new URLSearchParams(searchParams.toString())
-    params.set("type", type.slug)
+    params.set("type", type.$id)
     router.push(`/dashboard/cars/new?${params.toString()}`)
   }
 
@@ -137,4 +136,3 @@ export function CarTypeSelector() {
     </Popover>
   )
 }
-

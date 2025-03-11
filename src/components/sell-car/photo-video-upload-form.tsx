@@ -1,20 +1,18 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect, useCallback } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
-import { ChevronLeft, Camera, X, ImageIcon, Video } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { toast } from "sonner"
-import { useMutation } from "@tanstack/react-query"
-import { savePhotoVideo, uploadFiles, getCarInformation } from "@/lib/actions"
-import { useCarStore } from "@/store/car-store"
-import Image from "next/image"
-import { Input } from "@/components/ui/input"
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { ChevronLeft, Camera, X, ImageIcon, Video } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { savePhotoVideo, uploadFiles, getCarInformation } from "@/lib/actions";
+import Image from "next/image";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +20,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 const formSchema = z.object({
   images: z.array(z.string()).min(1, "At least one image is required"),
@@ -31,184 +29,187 @@ const formSchema = z.object({
     .url("Please enter a valid video URL")
     .optional()
     .or(z.literal("")),
-})
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 // Animation variants
 const fadeIn = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   transition: { duration: 0.5 },
-}
+};
 
 const fadeInDown = {
   initial: { opacity: 0, y: -20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 },
-}
+};
 
 const slideInRight = {
   initial: { opacity: 0, x: 50 },
   animate: { opacity: 1, x: 0 },
   transition: { duration: 0.5 },
-}
+};
 
 const bounceIn = {
   initial: { scale: 0.8, opacity: 0 },
   animate: { scale: 1, opacity: 1 },
   transition: { duration: 0.5, type: "spring", stiffness: 300 },
-}
+};
 
 export default function PhotoVideoUploadForm() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const mode = searchParams.get("mode")
-  const id = searchParams.get("id")
-  const isEditMode = mode === "edit" && id
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
+  const id = searchParams.get("id");
+  const isEditMode = mode === "edit" && id;
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const horizontalScrollRef = useRef<HTMLDivElement>(null)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const horizontalScrollRef = useRef<HTMLDivElement>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  // Zustand store
-  const car_id = useCarStore((state) => state.car_id)
-  const photos = useCarStore((state) => state.photos)
-  const setPhotos = useCarStore((state) => state.setPhotos)
-  const setCarId = useCarStore((state) => state.setCarId)
+  // Local state for photo/video data
+  const [photoData, setPhotoData] = useState<FormValues>({
+    images: [],
+    video: "",
+  });
 
-  // Fetch car data in edit mode and update store
+  // Get IDs from URL search parameters
+  const carId = searchParams.get("carId");
+  const specificationID = searchParams.get("specificationID");
+  const featuresId = searchParams.get("featuresId");
+
+  // In edit mode, fetch existing car data to pre-populate the form
   useEffect(() => {
     const fetchCarData = async () => {
       if (isEditMode && id) {
-        const { success, data } = await getCarInformation(id)
+        const { success, data } = await getCarInformation(id);
         if (success && data) {
-          // Assuming the photos data is stored under data.photos
-          setPhotos({
+          setPhotoData({
             images: data?.images || [],
             video: data?.video || "",
-          })
-          setCarId(id)
+          });
         } else {
-          toast.error("Failed to fetch car information")
-          router.push("/dashboard/cars")
+          toast.error("Failed to fetch car information");
+          router.push("/dashboard/cars");
         }
       }
-    }
-    fetchCarData()
-  }, [isEditMode, id, setPhotos, setCarId, router])
+    };
+    fetchCarData();
+  }, [isEditMode, id, router]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      images: photos?.images || [],
-      video: photos?.video || "",
+      images: photoData.images,
+      video: photoData.video || "",
     },
-  })
+  });
 
-  // Update form values if store photos change
+  // Reset form values if photoData changes
   useEffect(() => {
-    if (photos) {
-      form.reset({
-        images: photos.images,
-        video: photos.video || "",
-      })
-    }
-  }, [photos, form])
+    form.reset({
+      images: photoData.images,
+      video: photoData.video || "",
+    });
+  }, [photoData, form]);
 
-  // Validate that we have a car ID
+  // Ensure a valid carId exists; if not, redirect to start over.
   useEffect(() => {
-    if (!car_id) {
+    if (!carId) {
       toast.error("No car information found", {
         description: "Please start from the beginning to add a new car.",
-      })
-      router.push("/sell-car")
+      });
+      router.push("/sell-car");
     }
-  }, [car_id, router])
+  }, [carId, router]);
 
+  // File upload mutation using TanStack Query
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       try {
-        const result = await uploadFiles(formData)
+        const result = await uploadFiles(formData);
         if (!result.success) {
-          throw new Error(result.error || "Upload failed")
+          throw new Error(result.error || "Upload failed");
         }
-        return result.data
+        return result.data;
       } catch (error) {
-        console.error("Upload error:", error)
-        throw error
+        console.error("Upload error:", error);
+        throw error;
       }
     },
-    onSuccess: (urls) => {
-      const currentImages = form.getValues("images") || []
+    onSuccess: (urls: string[]) => {
+      const currentImages = form.getValues("images") || [];
       if (currentImages.length + urls.length > 5) {
         toast.error("Too many photos", {
           description: "You can only upload up to 5 photos.",
-        })
-        return
+        });
+        return;
       }
-      form.setValue("images", [...currentImages, ...urls])
+      form.setValue("images", [...currentImages, ...urls]);
     },
     onError: (error) => {
       toast.error("Upload failed", {
         description: "Failed to upload images. Please try again.",
-      })
-      console.error("Upload error:", error)
+      });
+      console.error("Upload error:", error);
     },
-  })
+  });
 
+  // Mutation to save photo/video data
   const { mutate: saveForm, isPending: isSaving } = useMutation({
     mutationFn: async (data: FormValues) => {
-      if (!car_id) {
-        throw new Error("No car ID found")
+      if (!carId) {
+        throw new Error("No car ID found");
       }
-      // Save to database first
-      const result = await savePhotoVideo(data, car_id)
-      // Only update store if save was successful
-      if (result.success) {
-        setPhotos(data)
-      }
-      return result
+
+      console.log(data)
+
+      const result = await savePhotoVideo(data, carId);
+      return result;
     },
     onSuccess: (result) => {
       if (result.success) {
         if (isEditMode) {
-          setShowSuccessDialog(true)
+          setShowSuccessDialog(true);
         } else {
           toast.success("Photos saved", {
             description: "Car photos have been saved successfully.",
-          })
-          router.push("/dashboard/cars/new/pricing")
+          });
+          router.push(
+            `/dashboard/cars/new/pricing?carId=${carId}&specificationID=${specificationID}&featuresId=${featuresId}&photoVideoId=${result.data.$id}`
+          );
         }
       } else {
         toast.error("Error saving photos", {
           description: result.error || "An error occurred while saving photos.",
-        })
+        });
       }
     },
     onError: (error) => {
       toast.error("Error saving photos", {
         description: "An unexpected error occurred. Please try again.",
-      })
-      console.error("Error saving car photos:", error)
+      });
+      console.error("Error saving car photos:", error);
     },
-  })
+  });
 
   const handleFileUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files
-      if (!files?.length) return
+      const files = event.target.files;
+      if (!files?.length) return;
 
-      const formData = new FormData()
+      const formData = new FormData();
       Array.from(files).forEach((file) => {
-        formData.append("files", file)
-      })
+        formData.append("files", file);
+      });
 
-      uploadMutation.mutate(formData)
+      uploadMutation.mutate(formData);
     },
-    [uploadMutation],
-  )
+    [uploadMutation]
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -216,7 +217,9 @@ export default function PhotoVideoUploadForm() {
         {/* Top Description */}
         <div className="mb-8 text-center">
           <motion.div variants={fadeInDown} initial="initial" animate="animate">
-            <h1 className="text-3xl font-bold text-gray-900">Car Photos & Video</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Car Photos &amp; Video
+            </h1>
             <p className="mt-2 text-lg text-gray-500">
               Upload high-quality photos to showcase your car!
             </p>
@@ -253,7 +256,8 @@ export default function PhotoVideoUploadForm() {
                 <div className="relative w-full" style={{ height: "350px" }}>
                   <Image
                     src={
-                      form.watch("images")[selectedImageIndex] || "/placeholder.svg"
+                      form.watch("images")[selectedImageIndex] ||
+                      "/placeholder.svg"
                     }
                     alt="Selected"
                     fill
@@ -262,12 +266,12 @@ export default function PhotoVideoUploadForm() {
                   />
                   <button
                     onClick={() => {
-                      const currentImages = form.getValues("images")
+                      const currentImages = form.getValues("images");
                       form.setValue(
                         "images",
-                        currentImages.filter((_, i) => i !== selectedImageIndex),
-                      )
-                      setSelectedImageIndex(Math.max(0, selectedImageIndex - 1))
+                        currentImages.filter((_, i) => i !== selectedImageIndex)
+                      );
+                      setSelectedImageIndex(Math.max(0, selectedImageIndex - 1));
                     }}
                     className="absolute right-4 top-4 rounded-full bg-black/30 p-2 hover:bg-black/50 transition-colors"
                   >
@@ -290,7 +294,9 @@ export default function PhotoVideoUploadForm() {
                   <div className="mb-4 rounded-full bg-gray-100 p-4">
                     <Camera size={32} className="text-primary" />
                   </div>
-                  <p className="mb-2 text-lg font-semibold">Add photos of your car</p>
+                  <p className="mb-2 text-lg font-semibold">
+                    Add photos of your car
+                  </p>
                   <p className="text-gray-500">Upload up to 5 photos</p>
                 </button>
               </motion.div>
@@ -328,12 +334,18 @@ export default function PhotoVideoUploadForm() {
                           "relative overflow-hidden rounded-xl transition-all",
                           selectedImageIndex === index
                             ? "ring-2 ring-primary ring-offset-2"
-                            : "",
+                            : ""
                         )}
                       >
-                        <div className="relative" style={{ width: "80px", height: "80px" }}>
+                        <div
+                          className="relative"
+                          style={{ width: "80px", height: "80px" }}
+                        >
                           <Image
-                            src={form.watch("images")[index] || "/placeholder.svg"}
+                            src={
+                              form.watch("images")[index] ||
+                              "/placeholder.svg"
+                            }
                             alt={`Thumbnail ${index}`}
                             fill
                             className="rounded-xl object-cover"
@@ -357,7 +369,9 @@ export default function PhotoVideoUploadForm() {
 
           {/* Tips Section */}
           <div className="mt-6">
-            <h2 className="mb-4 text-lg font-semibold">Tips for great car photos</h2>
+            <h2 className="mb-4 text-lg font-semibold">
+              Tips for great car photos
+            </h2>
             <div className="space-y-3">
               {[
                 "Use natural lighting for better quality",
@@ -403,7 +417,7 @@ export default function PhotoVideoUploadForm() {
                     ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                     : !form.watch("images")?.length
                     ? "bg-gray-200 text-gray-500"
-                    : "bg-primary text-white hover:bg-primary/90",
+                    : "bg-primary text-white hover:bg-primary/90"
                 )}
               >
                 {uploadMutation.isPending || isSaving ? (
@@ -458,7 +472,7 @@ export default function PhotoVideoUploadForm() {
           </DialogHeader>
           <DialogFooter>
             <button
-              onClick={() => router.push(`/dashboard/cars/${car_id}`)}
+              onClick={() => router.push(`/dashboard/cars/${carId}`)}
               className="bg-primary text-white rounded px-4 py-2"
             >
               Go to Car Details
@@ -467,5 +481,5 @@ export default function PhotoVideoUploadForm() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
