@@ -37,7 +37,7 @@ export default async function PricingPaymentPage({ searchParams }: PricingPaymen
 
       <div className="mt-8">
         {/* Pass the resolved carId to your review form */}
-        <ReviewSubmitForm carId={carId} />
+        <ReviewSubmitForm carId={carId} carinfo={carinfo} />
       </div>
     </div>
   );
