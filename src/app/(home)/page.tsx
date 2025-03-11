@@ -6,8 +6,12 @@ import { TrustpilotReviews } from "@/components/trustpilot-reviews"
 import { CarSearch } from "@/components/car-search"
 import { FeaturedCars } from "@/components/featured-cars"
 import { Footer } from "@/components/footer"
+import { getCarFeatures } from "@/lib/actions"
 
-export default function Home() {
+export default async function Home() {
+  const allcarfeatures = await getCarFeatures()
+  console.log(JSON.stringify(allcarfeatures))
+
   return (
    <div>
       <main className="flex-1">

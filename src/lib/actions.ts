@@ -1,4 +1,5 @@
 "use server";
+import { CarInfo } from "@/types/types";
 import { revalidatePath } from "next/cache";
 import { Databases, ID, Client, Query, Storage } from "node-appwrite";
 
@@ -15,17 +16,63 @@ const storage = new Storage(client);
 const databaseId = process.env.APPWRITE_DATABASE_ID as string;
 
 
+const carinfocollectionId = "67cf10af003268a33d9f" //step one create basic deatails, also this is the main collection which we will be updating with other collections ids using relationships
+const specificcarfeaturescollectionid = "67cf1666001ed0b21def" //in relation to the cainfocollection
+const carspecificationscollectionid = "67cf13670024a02affcb" //in relation to the cainfocollection
+const ownershipdocumentationcollectionid = "67cf18060032a0e926cd" //in relation to the cainfocollection
+const pricingpaymentcollectionid = "67cf18f100055d893194" //in relation to the cainfocollection
+
+
+
+//the below collections should only be used for fetching data not creating
 const allcarfeaturescollectionid = "67cee7db000302166d7b"
-const specificcarfeaturescollectionid = "67cf1666001ed0b21def"
-const carinfocollectionId = "67cf10af003268a33d9f"
-const carspecificationscollectionid = "67cf13670024a02affcb"
+const carcolorscollectionid = "67c86a92000277171665"
 const carTypeCollectionId = "67cee30c001fd65329ac"
 const carmakecollectionsId = "67c72fe00000db170b7b"
-const carcolorscollectionid = "67c86a92000277171665"
-const ownershipdocumentationcollectionid = "67cf18060032a0e926cd"
-const pricingpaymentcollectionid = "67cf18f100055d893194"
 
 
+export const getCarFeatures = async () => {
+	try {
+	  const response = await database.listDocuments(databaseId, allcarfeaturescollectionid)
+  
+	  return { success: true, data: response.documents[0] }
+	} catch (error) {
+	  console.error("Error fetching car features:", error)
+	  return { success: false, error: "Failed to fetch car features" }
+	}
+  }
+  
+
+  export const getCarTypes = async ({
+	cursor = null,
+	search = "",
+	limit = 25,
+  }: {
+	cursor?: string | null
+	search?: string
+	limit?: number
+  }) => {
+	try {
+	  const queries: any[] = []
+  
+	  if (search) {
+		queries.push(Query.search("name", search))
+	  }
+  
+	  if (cursor) {
+		queries.push(Query.cursorAfter(cursor))
+	  }
+  
+	  queries.push(Query.limit(limit))
+  
+	  const response = await database.listDocuments(databaseId, carTypeCollectionId, queries)
+  
+	  return { success: true, data: response.documents }
+	} catch (error) {
+	  console.error("Error fetching car types:", error)
+	  return { success: false, error: "Failed to fetch car types" }
+	}
+  }
 
 
 
@@ -90,7 +137,7 @@ export const getCarMakes = async ({
 	}
 };
 
-export async function saveBasicCarInfo(data: BasicCarInfo) {
+export async function saveBasicCarInfo(data: CarInfo) {
 	try {
 		const carInfo = await database.createDocument(
 			databaseId,
@@ -197,43 +244,7 @@ export async function savePhotoVideo(data: PhotoVideo, carId: string) {
 	}
 }
 
-const apiKey = process.env.RAPID_API_KEY as string;
 
-//get car models
-export const fetchCarModels = async (make: string, searchQuery: string) => {
-	if (!apiKey) {
-		throw new Error("API Key not found");
-	}
-	if (!make || searchQuery.length < 2) return [];
-
-	try {
-		const url = `https://car-data.p.rapidapi.com/cars?model=${searchQuery.toLowerCase()}&limit=10`;
-
-		const response = await fetch(url, {
-			method: "GET",
-			headers: {
-				"x-rapidapi-key": apiKey,
-				"x-rapidapi-host": "car-data.p.rapidapi.com",
-				"Content-Type": "application/json",
-			},
-		});
-
-		if (!response.ok) {
-			const errorData = await response.json();
-			throw new Error(
-				`API Error: ${response.status} - ${errorData.message || "Unknown error"}`,
-			);
-		}
-
-		const data = await response.json();
-
-		// Remove duplicates by model name
-		return Array.from(new Map(data.map((car: any) => [car.model, car])).values());
-	} catch (error) {
-		console.error("Error fetching car models:", error);
-		return [];
-	}
-};
 
 export async function getExteriorFeatures() {
 	try {
@@ -252,7 +263,7 @@ export async function getCarColors() {
 	try {
 		const carcolors = await database.listDocuments(
 			databaseId,
-			colorscollectionid,
+			carcolorscollectionid,
 		);
 		return { success: true, data: carcolors.documents };
 	} catch (error) {

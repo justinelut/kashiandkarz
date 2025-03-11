@@ -89,17 +89,19 @@ export interface CarSpecifications {
 	safety_rating: number;
 }
 
-export interface CarFeatures {
-	exterior_features: string[];
-	interior_features: string[];
-	safety_features: string[];
-	family_features: string[];
-	security_features: string[];
-	engine_features: string[];
-	convenience_features: string[];
-	entertainment_features: string[];
-	wheels_features: string[];
-	ideal_for: string[];
+export interface CarFeaturesOptions {
+  interior_features: string[];
+  engine: string[];
+  wheels: string[];
+  exterior_features: string[];
+  safety_features: string[];
+  entertainment_features: string[];
+  convenience_features: string[];
+  security_features: string[];
+  sports_car_features: string[];
+  family_car_features: string[];
+  ecofriendly_features: string[];
+  commercial_car_features: string[];
 }
 
 export interface OwnershipDocumentation {
@@ -109,6 +111,7 @@ export interface OwnershipDocumentation {
 	previous_owners: number;
 	insurance_status: "valid" | "expired" | "none";
 }
+
 
 export interface PricingPayment {
 	selling_price: string;
@@ -120,3 +123,5 @@ export interface PricingPayment {
 	road_tax: string;
 	warranty: string;
 }
+
+

@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useRouter, useSearchParams } from "next/navigation"
-import { useMutation } from "@tanstack/react-query"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useEffect, useState } from "react"
-import { z } from "zod"
-import { ChevronLeft, ChevronRight, DollarSignIcon } from "lucide-react"
-import { toast } from "sonner"
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { ChevronLeft, ChevronRight, DollarSignIcon } from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -17,7 +17,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -26,17 +26,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -44,23 +44,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { savePricingPayment, getCarInformation } from "@/lib/actions"
-import { useCarStore } from "@/store/car-store"
+} from "@/components/ui/dialog";
+import { savePricingPayment, getCarInformation } from "@/lib/actions";
+import { useCarStore } from "@/store/car-store";
 
 const currencies = [
   { value: "USD", label: "USD ($)" },
   { value: "EUR", label: "EUR (€)" },
   { value: "GBP", label: "GBP (£)" },
   { value: "KES", label: "KES (KSh)" },
-]
+];
 
 const paymentMethods = [
   { id: "cash", label: "Cash" },
   { id: "bank-transfer", label: "Bank Transfer" },
   { id: "mobile-money", label: "Mobile Money" },
   { id: "financing", label: "Financing" },
-]
+];
 
 const formSchema = z.object({
   selling_price: z.string().min(1, "Price is required"),
@@ -70,31 +70,34 @@ const formSchema = z.object({
   payment_methods: z
     .array(z.string())
     .min(1, "Select at least one payment method"),
-})
+  insurance_group: z.string().min(1, "Insurance group is required"),
+  road_tax: z.string().min(1, "Road tax is required"),
+  warranty: z.string().min(1, "Warranty is required"),
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 export default function PricingPaymentForm() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const mode = searchParams.get("mode")
-  const id = searchParams.get("id")
-  const isEditMode = mode === "edit" && id
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
+  const id = searchParams.get("id");
+  const isEditMode = mode === "edit" && id;
 
   // Local state for success dialog when updating in edit mode
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   // Zustand store
-  const car_id = useCarStore((state) => state.car_id)
-  const pricing = useCarStore((state) => state.pricing)
-  const setPricing = useCarStore((state) => state.setPricing)
-  const setCarId = useCarStore((state) => state.setCarId)
+  const car_id = useCarStore((state) => state.car_id);
+  const pricing = useCarStore((state) => state.pricing);
+  const setPricing = useCarStore((state) => state.setPricing);
+  const setCarId = useCarStore((state) => state.setCarId);
 
   // Fetch car data in edit mode and update the store
   useEffect(() => {
     const fetchCarData = async () => {
       if (isEditMode && id) {
-        const { success, data } = await getCarInformation(id)
+        const { success, data } = await getCarInformation(id);
         if (success && data) {
           setPricing({
             selling_price: data?.selling_price || "",
@@ -102,26 +105,29 @@ export default function PricingPaymentForm() {
             negotiable: data?.negotiable || "no",
             installment_plans: data?.installment_plans || "no",
             payment_methods: data?.payment_methods || ["cash"],
-          })
-          setCarId(id)
+            insurance_group: data?.insurance_group || "",
+            road_tax: data?.road_tax || "",
+            warranty: data?.warranty || "",
+          });
+          setCarId(id);
         } else {
-          toast.error("Failed to fetch car information")
-          router.push("/dashboard/cars")
+          toast.error("Failed to fetch car information");
+          router.push("/dashboard/cars");
         }
       }
-    }
-    fetchCarData()
-  }, [isEditMode, id, setPricing, setCarId, router])
+    };
+    fetchCarData();
+  }, [isEditMode, id, setPricing, setCarId, router]);
 
   // Validate that we have a car ID
   useEffect(() => {
     if (!car_id) {
       toast.error("No car information found", {
         description: "Please start from the beginning to add a new car.",
-      })
-      router.push(isEditMode ? "/dashboard/cars" : "/sell-car")
+      });
+      router.push(isEditMode ? "/dashboard/cars" : "/sell-car");
     }
-  }, [car_id, router, isEditMode])
+  }, [car_id, router, isEditMode]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -131,48 +137,51 @@ export default function PricingPaymentForm() {
       negotiable: pricing?.negotiable || "no",
       installment_plans: pricing?.installment_plans || "no",
       payment_methods: pricing?.payment_methods || ["cash"],
+      insurance_group: pricing?.insurance_group || "",
+      road_tax: pricing?.road_tax || "",
+      warranty: pricing?.warranty || "",
     },
-  })
+  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: FormValues) => {
       if (!car_id) {
-        throw new Error("No car ID found")
+        throw new Error("No car ID found");
       }
       // Save to store first
-      setPricing(data)
+      setPricing(data);
       // Then save to database
-      return await savePricingPayment(data, car_id)
+      return await savePricingPayment(data, car_id);
     },
     onSuccess: (result) => {
       if (result.success) {
         if (isEditMode) {
-          setShowSuccessDialog(true)
+          setShowSuccessDialog(true);
         } else {
           toast.success("Pricing and payment options saved", {
             description:
               "Pricing and payment options have been saved successfully.",
-          })
-          router.push("/dashboard/cars/new/review")
+          });
+          router.push("/dashboard/cars/new/review");
         }
       } else {
         toast.error("Error saving pricing and payment options", {
           description:
             result.error ||
             "An error occurred while saving pricing and payment options.",
-        })
+        });
       }
     },
     onError: (error) => {
       toast.error("Error saving pricing and payment options", {
         description: "An unexpected error occurred. Please try again.",
-      })
-      console.error("Error saving pricing and payment options:", error)
+      });
+      console.error("Error saving pricing and payment options:", error);
     },
-  })
+  });
 
   function onSubmit(data: FormValues) {
-    mutate(data)
+    mutate(data);
   }
 
   if (!car_id) {
@@ -184,7 +193,7 @@ export default function PricingPaymentForm() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -200,7 +209,8 @@ export default function PricingPaymentForm() {
             </CardTitle>
           </div>
           <CardDescription>
-            Set your selling price and preferred payment methods
+            Set your selling price and preferred payment methods along with
+            insurance, road tax, and warranty details.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
@@ -338,41 +348,97 @@ export default function PricingPaymentForm() {
                         key={method.id}
                         control={form.control}
                         name="payment_methods"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={method.id}
-                              className="flex flex-row items-start space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(method.id)}
-                                  onCheckedChange={(checked) =>
-                                    checked
-                                      ? field.onChange([
-                                          ...field.value,
-                                          method.id,
-                                        ])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== method.id
-                                          )
-                                        )
-                                  }
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                {method.label}
-                              </FormLabel>
-                            </FormItem>
-                          )
-                        }}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(method.id)}
+                                onCheckedChange={(checked) =>
+                                  checked
+                                    ? field.onChange([...field.value, method.id])
+                                    : field.onChange(
+                                        field.value.filter((value) => value !== method.id)
+                                      )
+                                }
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {method.label}
+                            </FormLabel>
+                          </FormItem>
+                        )}
                       />
                     ))}
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Additional Fields for Insurance Group, Road Tax, and Warranty */}
+              <div className="grid gap-6 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="insurance_group"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base">
+                        Insurance Group
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter insurance group"
+                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="road_tax"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base">
+                        Road Tax
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter road tax amount"
+                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="warranty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base">
+                        Warranty
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter warranty details"
+                          className="h-11 rounded-md border-muted-foreground/20 bg-background px-4 py-3 shadow-sm transition-colors focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </form>
           </Form>
         </CardContent>
@@ -419,5 +485,5 @@ export default function PricingPaymentForm() {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
