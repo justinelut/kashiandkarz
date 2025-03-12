@@ -17,6 +17,7 @@ import {
   Edit,
   PencilIcon,
   Eye,
+  Tag,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -63,11 +64,20 @@ export type Car = {
     image?: string;
   };
   images: string[];
-  selling_price: string;
-  currency: string;
+  pricing_payments: {
+    selling_price: number;
+    currency: string;
+    negotiable: string;
+    installment_plans: string;
+    payment_methods: string[];
+    insurance_group?: string;
+    road_tax?: string;
+    warranty?: string;
+  };
   status: "published" | "draft";
   availability: boolean;
   featured: boolean;
+  big_deal: boolean;
   // Updated fields for admin category controls:
   category?: "sport" | "family" | "luxury"; // now includes luxury
   commercial?: boolean; // switch for commercial vehicles
@@ -79,6 +89,7 @@ export type ReviewSubmit = {
   availability: boolean;
   slug: string;
   featured: boolean;
+  big_deal: boolean;
   category?: "sport" | "family" | "luxury";
   commercial?: boolean;
 };
@@ -104,6 +115,7 @@ export default function CarsList({ cars }: CarsListProps) {
       availability: updatedValues.availability ?? car.availability,
       slug: car.slug, // unchanged
       featured: updatedValues.featured ?? car.featured,
+      big_deal: updatedValues.big_deal ?? car.big_deal,
       category: updatedValues.category ?? car.category,
       commercial: updatedValues.commercial ?? car.commercial,
     };
@@ -124,7 +136,7 @@ export default function CarsList({ cars }: CarsListProps) {
   const isLuxuryCar = (car: Car) => {
     // You might want to define your own criteria for luxury cars
     // This is just an example - using a high price threshold
-    const price = Number(car.selling_price);
+    const price = car.pricing_payments?.selling_price;
     return price > 30000000; // Example threshold
   }
 
@@ -203,10 +215,28 @@ export default function CarsList({ cars }: CarsListProps) {
     );
   };
 
+  // New function to render Big Deal switch
+  const renderBigDealControl = (car: Car) => {
+    return (
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Big Deal</span>
+        <Switch
+          checked={car.big_deal ?? false}
+          onCheckedChange={(checked) =>
+            handleUpdate(car, { big_deal: Boolean(checked) })
+          }
+        />
+      </div>
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {updatedCars.map((car) => (
-        <Card key={car.$id} className="space-y-4 shadow hover:shadow-xl transition-shadow">
+        <Card key={car.$id} className={cn(
+          "space-y-4 shadow hover:shadow-xl transition-shadow",
+          car.big_deal && "ring-2 ring-orange-400"
+        )}>
           <Link href={`/dashboard/cars/${car.$id}`}>
             <div className="relative h-48 w-full">
               {car.images?.length ? (
@@ -221,12 +251,19 @@ export default function CarsList({ cars }: CarsListProps) {
                   <span>No Image</span>
                 </div>
               )}
-              {/* Badge for luxury cars */}
-              {car.category === "luxury" && (
-                <div className="absolute top-2 right-2">
-                  <Badge className="bg-gold text-black">Luxury</Badge>
-                </div>
-              )}
+              {/* Badge container for the top-right corner */}
+              <div className="absolute top-2 right-2 flex flex-col gap-2">
+                {/* Big Deal badge */}
+                {car.big_deal && (
+                  <Badge className="bg-orange-500 text-white px-2 py-1">
+                    <Tag className="h-3 w-3 mr-1" /> Big Deal
+                  </Badge>
+                )}
+                {/* Luxury badge */}
+                {car.category === "luxury" && (
+                  <Badge className="bg-yellow-400 text-black px-2 py-1">Luxury</Badge>
+                )}
+              </div>
             </div>
           </Link>
           <CardContent className="p-4">
@@ -237,12 +274,12 @@ export default function CarsList({ cars }: CarsListProps) {
             <p className="mt-2 font-semibold">
               {new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: car.pricing_payments.currency,
+                currency: car.pricing_payments?.currency || "USD",
                 maximumFractionDigits: 0,
-              }).format(Number(car.pricing_payments.selling_price))}
+              }).format(Number(car.pricing_payments?.selling_price || 0))}
             </p>
             {/* Display category badges */}
-            <div className="mt-2 flex space-x-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               {car.category && (
                 <Badge variant={car.category === "luxury" ? "secondary" : "outline"}>
                   {car.category === "sport" 
@@ -253,6 +290,7 @@ export default function CarsList({ cars }: CarsListProps) {
                 </Badge>
               )}
               {car.commercial && <Badge variant="outline">Commercial</Badge>}
+              {car.featured && <Badge variant="outline" className="bg-blue-50">Featured</Badge>}
             </div>
           </CardContent>
           {/* Admin Controls – update onChange */}
@@ -295,6 +333,8 @@ export default function CarsList({ cars }: CarsListProps) {
                 }
               />
             </div>
+            {/* Big Deal: using shadcn Switch */}
+            {renderBigDealControl(car)}
             {/* Category controls */}
             {renderCategoryControl(car)}
             {/* Commercial: Switch control */}

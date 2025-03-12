@@ -2,6 +2,7 @@
 import { CarFeaturesOptions, CarInfo, CarSpecifications, OwnershipDocumentation, PhotoVideo, PricingPayment, ReviewSubmit, UpdateStatus } from "@/types/types";
 import { revalidatePath } from "next/cache";
 import { Databases, ID, Client, Query, Storage } from "node-appwrite";
+import { bigint } from "zod";
 
 // Initialize Appwrite client
 const client = new Client()
@@ -386,6 +387,7 @@ export async function updateStatus(
 			category: data?.category,
 			featured: data.featured,
 			commercial: data.commercial,
+			big_deal: data.big_deal,
 		});
 
 		return {
@@ -454,3 +456,27 @@ export async function updateBasicCarInfo(
 		return { success: false, error: "Failed to update car information" };
 	}
 }
+
+
+
+
+export const getBigDeals = async () => {
+	try {
+	  // Query for cars with big_deal flag set to true
+	  const queries = [
+		Query.equal("big_deal", true),
+		Query.equal("status", "published"),
+		Query.equal("availability", true),
+		Query.limit(6), // Limit to 6 cars for the carousel
+	  ]
+  
+	  const response = await database.listDocuments(databaseId, carinfocollectionId, queries)
+  
+	  // The car info documents already contain all the nested data we need
+	  // No need to fetch related entities separately
+	  return { success: true, data: response.documents }
+	} catch (error) {
+	  console.error("Error fetching big deals:", error)
+	  return { success: false, error: "Failed to fetch big deals" }
+	}
+  }

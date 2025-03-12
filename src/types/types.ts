@@ -28,7 +28,9 @@ export interface UpdateStatus {
 	featured?: string;
 	category?: "sport" | "family" | "luxury";
 	commercial?: boolean;
+	big_deal?: boolean;
 }
+
 
 export interface CarColors {
 	name: string;
