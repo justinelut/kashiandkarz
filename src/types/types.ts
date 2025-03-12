@@ -119,3 +119,18 @@ export interface PricingPayment {
 	road_tax: string;
 	warranty: string;
 }
+
+
+export interface CompanyDetails {
+	name: string;
+	address: string;
+	phone: string;
+	email: string;
+	description: string;
+	logo: string;
+	social_media: {
+		facebook: string;
+		twitter: string;
+		instagram: string;
+	};
+}

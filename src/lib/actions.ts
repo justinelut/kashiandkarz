@@ -2,7 +2,7 @@
 import { CarFeaturesOptions, CarInfo, CarSpecifications, OwnershipDocumentation, PhotoVideo, PricingPayment, ReviewSubmit, UpdateStatus } from "@/types/types";
 import { revalidatePath } from "next/cache";
 import { Databases, ID, Client, Query, Storage } from "node-appwrite";
-import { bigint } from "zod";
+
 
 // Initialize Appwrite client
 const client = new Client()
@@ -25,6 +25,51 @@ const allcarfeaturescollectionid = "67cee7db000302166d7b";
 const carcolorscollectionid = "67c86a92000277171665";
 const carTypeCollectionId = "67cee30c001fd65329ac";
 const carmakecollectionsId = "67c72fe00000db170b7b";
+const callbackscollectionid = ""
+
+
+// Add to src/lib/actions.ts
+export async function getCallbacks() {
+	try {
+	  const database = new Databases(client);
+	  const response = await database.listDocuments(
+		databaseId,
+		callbackscollectionid
+	  );
+	  return { data: response.documents };
+	} catch (error) {
+	  console.error('Error fetching callbacks:', error);
+	  return { error: 'Failed to fetch callbacks' };
+	}
+  }
+
+export async function updateCompanyDetails() {
+	try {
+	  const database = new Databases(client);
+	  const response = await database.listDocuments(
+		databaseId,
+		callbackscollectionid
+	  );
+	  return { data: response.documents };
+	} catch (error) {
+	  console.error('Error fetching callbacks:', error);
+	  return { error: 'Failed to fetch callbacks' };
+	}
+  }
+
+export async function getCompanyDetails() {
+	try {
+	  const database = new Databases(client);
+	  const response = await database.listDocuments(
+		databaseId,
+		callbackscollectionid
+	  );
+	  return { data: response.documents };
+	} catch (error) {
+	  console.error('Error fetching callbacks:', error);
+	  return { error: 'Failed to fetch callbacks' };
+	}
+  }
 
 export const getCarFeatures = async () => {
 	try {
