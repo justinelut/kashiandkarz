@@ -30,7 +30,6 @@ export default async function Home() {
 				<CarSearch />
 				<FeaturedCars />
 			</main>
-			<Footer />
 		</div>
 	);
 }

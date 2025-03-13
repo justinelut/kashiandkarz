@@ -24,4 +24,9 @@ export const allcarfeaturescollectionid = "67cee7db000302166d7b";
 export const carcolorscollectionid = "67c86a92000277171665";
 export const carTypeCollectionId = "67cee30c001fd65329ac";
 export const carmakecollectionsId = "67c72fe00000db170b7b";
+
+export const reviewsCollectionId = "67d02a2d000000000000";
+export const usersCollectionId = "67d02a2d000000000000";
+
+
 export const callbackscollectionid = ""

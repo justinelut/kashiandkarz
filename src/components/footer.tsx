@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Facebook, Twitter, Instagram, Youtube, Music2 } from "lucide-react"
+import { Facebook, Twitter, Instagram, Youtube, Music2, MapPin, Phone, Mail, Clock, Shield, Car, FileText } from "lucide-react"
 import { Star } from "lucide-react"
 
 const footerLinks = {
@@ -8,31 +8,23 @@ const footerLinks = {
     { title: "Car reviews", href: "#" },
     { title: "Compare cars", href: "#" },
     { title: "Find a car", href: "#" },
-    { title: "New car deals", href: "#" },
-    { title: "Nearly new cars", href: "#" },
+    { title: "New cars", href: "#" },
     { title: "Used cars", href: "#" },
-    { title: "Car leasing", href: "#" },
+    { title: "Car financing", href: "#" },
     { title: "Sell my car", href: "#" },
-    { title: "Carwow Leasing", href: "#" },
   ],
   company: [
     { title: "About us", href: "#" },
     { title: "Contact us", href: "#" },
-    { title: "Leadership team", href: "#" },
-    { title: "Authors and experts", href: "#" },
-    { title: "How we test cars", href: "#" },
-    { title: "Carwow newsroom", href: "#" },
+    { title: "Our team", href: "#" },
     { title: "Careers", href: "#" },
-    { title: "Dealer & brand partners", href: "#" },
+    { title: "Dealership partners", href: "#" },
     { title: "Refer a friend", href: "#" },
   ],
   legal: [
     { title: "Terms & conditions", href: "#" },
-    { title: "Manage cookies & privacy", href: "#" },
-    { title: "Fraud disclaimer", href: "#" },
-    { title: "ESG Policy", href: "#" },
     { title: "Privacy policy", href: "#" },
-    { title: "Modern slavery statement", href: "#" },
+    { title: "Cookie policy", href: "#" },
     { title: "Sitemap", href: "#" },
   ],
 }
@@ -42,7 +34,7 @@ const socialLinks = [
   { icon: Twitter, href: "#" },
   { icon: Instagram, href: "#" },
   { icon: Youtube, href: "#" },
-  { icon: Music2, href: "#" }, // TikTok icon substitute
+  { icon: Music2, href: "#", label: "TikTok" }, // Using Music2 as TikTok substitute
 ]
 
 export function Footer() {
@@ -51,11 +43,28 @@ export function Footer() {
       <div className="container px-4 py-12 md:px-6">
         <div className="grid gap-12 md:grid-cols-4">
           <div>
-            <h3 className="mb-6 text-lg font-bold">Help Centre</h3>
-            <div className="space-y-2 text-gray-300">
-              <p>Monday to Friday 9.00 - 18.00</p>
-              <p>Saturday 9.00 - 17.30</p>
-              <p>Sundays and Bank Holidays CLOSED</p>
+            <h3 className="mb-6 text-lg font-bold">Contact Us</h3>
+            <div className="space-y-4 text-gray-300">
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <p>Nairobi, Kenya<br />Mombasa Road, Business Park</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-primary shrink-0" />
+                <p>+254 700 123 456</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-primary shrink-0" />
+                <p>info@kashiandkarz.co.ke</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Clock className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <p>Monday to Friday: 8:00 - 18:00</p>
+                  <p>Saturday: 9:00 - 15:00</p>
+                  <p>Sunday: Closed</p>
+                </div>
+              </div>
             </div>
             <div className="mt-6 flex gap-4">
               {socialLinks.map((social, index) => {
@@ -63,13 +72,14 @@ export function Footer() {
                 return (
                   <Link key={index} href={social.href} className="rounded-full bg-white/10 p-2 hover:bg-white/20">
                     <Icon className="h-5 w-5" />
-                    <span className="sr-only">{social.icon.name}</span>
+                    <span className="sr-only">{social.label || social.icon.name}</span>
                   </Link>
                 )
               })}
             </div>
           </div>
           <div>
+            <h3 className="mb-6 text-lg font-bold">Car Services</h3>
             <ul className="grid gap-3">
               {footerLinks.carInfo.map((link) => (
                 <li key={link.title}>
@@ -81,6 +91,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
+            <h3 className="mb-6 text-lg font-bold">Company</h3>
             <ul className="grid gap-3">
               {footerLinks.company.map((link) => (
                 <li key={link.title}>
@@ -93,22 +104,35 @@ export function Footer() {
           </div>
           <div>
             <div className="mb-4">
-              <p className="text-lg font-bold">Rated 4.5/5 from 66,161 reviews</p>
+              <p className="text-lg font-bold">Trusted by Kenyans</p>
               <div className="mt-2 flex">
-                {[1, 2, 3, 4].map((star) => (
-                  <Star key={star} className="h-5 w-5 fill-[#00e1e1] text-[#00e1e1]" />
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className="h-5 w-5 fill-[#ffb400] text-[#ffb400]" />
                 ))}
-                <Star className="h-5 w-5 fill-[#00e1e1]/50 text-[#00e1e1]" />
+              </div>
+              <p className="mt-2 text-sm">Based on 500+ verified reviews</p>
+            </div>
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-primary" />
+                <p className="text-sm">Secure payments</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Car className="h-5 w-5 text-primary" />
+                <p className="text-sm">Quality assured vehicles</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <p className="text-sm">Transparent documentation</p>
               </div>
             </div>
-            <img src="/placeholder.svg?height=30&width=100" alt="Trustpilot" className="h-8" />
           </div>
         </div>
       </div>
       <div className="border-t border-white/10 bg-black">
         <div className="container px-4 py-6 md:px-6">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-sm text-gray-400">© 2025 Carwow Ltd. All rights reserved</p>
+            <p className="text-sm text-gray-400"> 2025 Kashi & Karz Ltd. All rights reserved</p>
             <div className="flex gap-4">
               {footerLinks.legal.map((link) => (
                 <Link
@@ -121,63 +145,14 @@ export function Footer() {
               ))}
             </div>
           </div>
-          <div className="mb-6 flex gap-4">
-            <Link href="#" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white">
-              <img src="/placeholder.svg?height=20&width=30" alt="UK flag" className="h-5" />
-              UK
-            </Link>
-            <Link href="#" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white">
-              <img src="/placeholder.svg?height=20&width=30" alt="Germany flag" className="h-5" />
-              Germany
-            </Link>
-            <Link href="#" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white">
-              <img src="/placeholder.svg?height=20&width=30" alt="Spain flag" className="h-5" />
-              Spain
-            </Link>
-          </div>
           <div className="space-y-4 text-xs text-gray-400">
             <p>
-              * Please contact the dealer for a personalised quote, including terms and conditions. Quote is subject to
-              dealer requirements, including status and availability. Illustrations are based on personal contract hire,
-              9 month upfront fee, 48 month term, 8000 miles annually, inc VAT, excluding fees. Vehicle returned at term
-              end.
-            </p>
-            <p>
-              **{" "}
-              <Link href="#" className="underline">
-                Our marketing claims explained.
-              </Link>
-            </p>
-            <p className="leading-relaxed">
-              <Link href="#" className="underline">
-                Average savings
-              </Link>{" "}
-              are calculated daily based on the best dealer prices on Carwow vs manufacturer RRP. Carwow is the trading
-              name of Carwow Ltd, which is authorised and regulated by the Financial Conduct Authority for credit
-              broking and insurance distribution activities (firm reference number: 767155). Carwow Leasey Limited is an
-              appointed representative of ITC Compliance Limited which is authorised and regulated by the Financial
-              Conduct Authority for credit broking (firm reference number: 313486) Carwow and Carwow Leasey Limited are
-              each credit brokers and not a lenders. Carwow and Carwow Leasey Limited may receive a fee from retailers
-              advertising finance and may receive a commission from partners (including dealers) for introducing
-              customers. All finance offers and monthly payments shown are subject to application and status. Carwow is
-              covered by the Financial Ombudsman Service (please see{" "}
-              <Link href="http://www.financial-ombudsman.org.uk" className="underline">
-                www.financial-ombudsman.org.uk
-              </Link>{" "}
-              for more information). Carwow Ltd is registered in England (company number 07103079), registered office
-              2nd Floor, Verde Building, 10 Bressenden Place, London, England, SW1E 5DH. Carwow Limited is registered in
-              England (company number 13601714), registered office 2nd Floor, Verde Building, 10 Bressenden Place,
-              London, England, SW1E 5DH and is a wholly owned subsidiary of Carwow Ltd.
+              Kashi & Karz is a premier car dealership in Kenya, offering a wide selection of quality new and used vehicles.
+              Our mission is to provide exceptional service and transparent car buying experience for all our customers.
             </p>
           </div>
         </div>
       </div>
-      <div className="bg-[#1C1C1C] p-4 text-center">
-        <Link href="#" className="text-[#00e1e1] hover:underline">
-          Spring Sale - Save up to £7,550 off RRP*
-        </Link>
-      </div>
     </footer>
   )
 }
-
