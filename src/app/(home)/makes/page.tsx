@@ -3,7 +3,7 @@ import { CarMakesGrid } from "@/components/makes/car-makes-grid";
 import { PopularCarMakes } from "@/components/makes/popular-car-makes";
 import { CarMakesSearch } from "@/components/makes/car-makes-search";
 import { Pagination } from "@/components/ui/pagination";
-import { getAllCarMakes, getPopularCarMakes } from "@/actions/car-makes";
+import { getAllCarMakes, getPopularCarMakes } from "@/lib/car-makes";
 
 interface CarMakesPageProps {
 	searchParams: {

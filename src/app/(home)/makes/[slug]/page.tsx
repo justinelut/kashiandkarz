@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { CarMakeHero } from "@/components/makes/car-make-hero";
 import { CarMakeVehicles } from "@/components/makes/car-make-vehicles";
-import { getCarMakeBySlug } from "@/actions/car-makes";
+import { getCarMakeBySlug } from "@/lib/car-makes";
 
 interface CarMakePageProps {
 	params: {

@@ -1,6 +1,6 @@
 import { CarDetailsView } from "@/components/car-details/car-details-view"
 import { ReviewsSection } from "@/components/car-details/reviews-section"
-import { getCarBySlug } from "@/lib/actions"
+import { getCarBySlug } from "@/lib/car-details-actions"
 import { notFound } from "next/navigation"
 
 export default async function CarPage({ params }: { params: { slug: string } }) {
