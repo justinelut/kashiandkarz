@@ -46,19 +46,19 @@ export function Footer() {
             <h3 className="mb-6 text-lg font-bold">Contact Us</h3>
             <div className="space-y-4 text-gray-300">
               <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <MapPin className="h-5 w-5 text-white shrink-0 mt-0.5" />
                 <p>Nairobi, Kenya<br />Mombasa Road, Business Park</p>
               </div>
               <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-primary shrink-0" />
+                <Phone className="h-5 w-5 text-white shrink-0" />
                 <p>+254 700 123 456</p>
               </div>
               <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-primary shrink-0" />
+                <Mail className="h-5 w-5 text-white shrink-0" />
                 <p>info@kashiandkarz.co.ke</p>
               </div>
               <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-primary shrink-0" />
+                <Clock className="h-5 w-5 text-white shrink-0" />
                 <div>
                   <p>Monday to Friday: 8:00 - 18:00</p>
                   <p>Saturday: 9:00 - 15:00</p>
@@ -71,7 +71,7 @@ export function Footer() {
                 const Icon = social.icon
                 return (
                   <Link key={index} href={social.href} className="rounded-full bg-white/10 p-2 hover:bg-white/20">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5 text-white" />
                     <span className="sr-only">{social.label || social.icon.name}</span>
                   </Link>
                 )
@@ -114,15 +114,15 @@ export function Footer() {
             </div>
             <div className="mt-6 space-y-4">
               <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-primary" />
+                <Shield className="h-5 w-5 text-white" />
                 <p className="text-sm">Secure payments</p>
               </div>
               <div className="flex items-center gap-3">
-                <Car className="h-5 w-5 text-primary" />
+                <Car className="h-5 w-5 text-white" />
                 <p className="text-sm">Quality assured vehicles</p>
               </div>
               <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-primary" />
+                <FileText className="h-5 w-5 text-white" />
                 <p className="text-sm">Transparent documentation</p>
               </div>
             </div>

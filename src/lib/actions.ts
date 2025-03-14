@@ -1,8 +1,31 @@
 "use server";
-import { CarFeaturesOptions, CarInfo, CarSpecifications, OwnershipDocumentation, PhotoVideo, PricingPayment, ReviewSubmit, UpdateStatus } from "@/types/types";
+import {
+	CarFeaturesOptions,
+	CarInfo,
+	CarSpecifications,
+	OwnershipDocumentation,
+	PricingPayment,
+	ReviewSubmit,
+	UpdateStatus,
+} from "@/types/types";
 import { revalidatePath } from "next/cache";
 import { Databases, ID, Client, Query, Storage } from "node-appwrite";
 
+import {
+	databaseId,
+	carinfocollectionId,
+	carmakecollectionsId,
+	carspecificationscollectionid,
+	ownershipdocumentationcollectionid,
+	pricingpaymentcollectionid,
+	exteriorFeatureCollectionId,
+	interiorFeatureCollectionId,
+	safetyFeatureCollectionId,
+	allcarfeaturescollectionid,
+	specificcarfeaturescollectionid,
+	carcolorscollectionid,
+	carTypeCollectionId,
+} from "./constants";
 
 // Initialize Appwrite client
 const client = new Client()
@@ -12,64 +35,46 @@ const client = new Client()
 
 const database = new Databases(client);
 const storage = new Storage(client);
-const databaseId = process.env.APPWRITE_DATABASE_ID as string;
-
-const carinfocollectionId = "67cf10af003268a33d9f"; //step one create basic deatails, also this is the main collection which we will be updating with other collections ids using relationships
-const specificcarfeaturescollectionid = "67cf1666001ed0b21def"; //in relation to the cainfocollection
-const carspecificationscollectionid = "67cf13670024a02affcb"; //in relation to the cainfocollection
-const ownershipdocumentationcollectionid = "67cf18060032a0e926cd"; //in relation to the cainfocollection
-const pricingpaymentcollectionid = "67cf18f100055d893194"; //in relation to the cainfocollection
-
-//the below collections should only be used for fetching data not creating
-const allcarfeaturescollectionid = "67cee7db000302166d7b";
-const carcolorscollectionid = "67c86a92000277171665";
-const carTypeCollectionId = "67cee30c001fd65329ac";
-const carmakecollectionsId = "67c72fe00000db170b7b";
-const callbackscollectionid = ""
-
 
 // Add to src/lib/actions.ts
 export async function getCallbacks() {
 	try {
-	  const database = new Databases(client);
-	  const response = await database.listDocuments(
-		databaseId,
-		callbackscollectionid
-	  );
-	  return { data: response.documents };
+		const response = await database.listDocuments(
+			databaseId,
+			"", //callbackscollectionid
+		);
+		return { data: response.documents };
 	} catch (error) {
-	  console.error('Error fetching callbacks:', error);
-	  return { error: 'Failed to fetch callbacks' };
+		console.error("Error fetching callbacks:", error);
+		return { error: "Failed to fetch callbacks" };
 	}
-  }
+}
 
 export async function updateCompanyDetails() {
 	try {
-	  const database = new Databases(client);
-	  const response = await database.listDocuments(
-		databaseId,
-		callbackscollectionid
-	  );
-	  return { data: response.documents };
+		const response = await database.listDocuments(
+			databaseId,
+			"", //callbackscollectionid
+		);
+		return { data: response.documents };
 	} catch (error) {
-	  console.error('Error fetching callbacks:', error);
-	  return { error: 'Failed to fetch callbacks' };
+		console.error("Error fetching callbacks:", error);
+		return { error: "Failed to fetch callbacks" };
 	}
-  }
+}
 
 export async function getCompanyDetails() {
 	try {
-	  const database = new Databases(client);
-	  const response = await database.listDocuments(
-		databaseId,
-		callbackscollectionid
-	  );
-	  return { data: response.documents };
+		const response = await database.listDocuments(
+			databaseId,
+			"", //callbackscollectionid
+		);
+		return { data: response.documents };
 	} catch (error) {
-	  console.error('Error fetching callbacks:', error);
-	  return { error: 'Failed to fetch callbacks' };
+		console.error("Error fetching callbacks:", error);
+		return { error: "Failed to fetch callbacks" };
 	}
-  }
+}
 
 export const getCarFeatures = async () => {
 	try {
@@ -120,7 +125,7 @@ export const getCarTypes = async ({
 	}
 };
 
-export async function saveCarMake(data: CarMake) {
+export async function saveCarMake(data: CarInfo) {
 	try {
 		const make = await database.createDocument(
 			databaseId,
@@ -225,9 +230,7 @@ export async function saveCarFeatures(data: CarFeaturesOptions) {
 	}
 }
 
-export async function saveOwnershipDocumentation(
-	data: OwnershipDocumentation,
-) {
+export async function saveOwnershipDocumentation(data: OwnershipDocumentation) {
 	try {
 		const docs = await database.createDocument(
 			databaseId,
@@ -261,8 +264,8 @@ export async function savePricingPayment(data: PricingPayment) {
 }
 
 export async function savePhotoVideo(data: CarInfo, carId: string) {
-	console.log(data)
-	console.log(carId)
+	console.log(data);
+	console.log(carId);
 	try {
 		const photos = await database.updateDocument(
 			databaseId,
@@ -370,38 +373,40 @@ export async function uploadFiles(formData: FormData) {
 	}
 }
 
-
-export async function updateCarInfo(data: CarInfo, carId:string) {
-	const databases = new Databases(client);
+export async function updateCarInfo(data: CarInfo, carId: string) {
 	try {
-		const carInfo = await databases.updateDocument(databaseId, carinfocollectionId, carId, data);
+		const carInfo = await database.updateDocument(
+			databaseId,
+			carinfocollectionId,
+			carId,
+			data,
+		);
 		return { success: true, carId: carInfo.$id };
 	} catch (error) {
 		console.error("Error updating car info:", error);
 		return { success: false, error: "Failed to update car info" };
 	}
 }
-export async function deleteCarListing(carId:string) {
-	const databases = new Databases(client);
+export async function deleteCarListing(carId: string) {
 	try {
-		const carInfo = await databases.deleteDocument(databaseId, carinfocollectionId, carId);
+		const carInfo = await database.deleteDocument(
+			databaseId,
+			carinfocollectionId,
+			carId,
+		);
 		return { success: true, carId: carInfo.$id };
 	} catch (error) {
 		console.error("Error updating car info:", error);
 		return { success: false, error: "Failed to update car info" };
 	}
 }
-
-
 
 export async function saveReviewSubmit(
 	data: ReviewSubmit,
 	car_id: string,
 ): Promise<{ success: boolean; data: null; error?: string }> {
 	try {
-		const databases = new Databases(client);
-
-		await databases.updateDocument(databaseId, carinfocollectionId, car_id, {
+		await database.updateDocument(databaseId, carinfocollectionId, car_id, {
 			status: data.status,
 			availability: data.availability,
 		});
@@ -424,9 +429,7 @@ export async function updateStatus(
 	car_id: string,
 ): Promise<{ success: boolean; data: null; error?: string }> {
 	try {
-		const databases = new Databases(client);
-
-		await databases.updateDocument(databaseId, carinfocollectionId, car_id, {
+		await database.updateDocument(databaseId, carinfocollectionId, car_id, {
 			status: data.status,
 			availability: data.availability,
 			category: data?.category,
@@ -452,9 +455,7 @@ export async function getSingleCarInfo(
 	car_id: string,
 ): Promise<{ success: boolean; data: CarInfo | null; error?: string }> {
 	try {
-		const databases = new Databases(client);
-
-		const car = await databases.getDocument(
+		const car = await database.getDocument(
 			databaseId,
 			carinfocollectionId,
 			car_id,
@@ -483,8 +484,8 @@ export async function getSingleCarInfo(
 }
 
 export async function updateBasicCarInfo(
-	data: BasicCarInfo & { id: string },
-): Promise<{ success: boolean; data?: BasicCarInfo; error?: string }> {
+	data: CarInfo & { id: string },
+): Promise<{ success: boolean; data?: CarInfo; error?: string }> {
 	try {
 		// Update the document in your Appwrite database
 		const updatedCar = await database.updateDocument(
@@ -502,26 +503,302 @@ export async function updateBasicCarInfo(
 	}
 }
 
+export async function updateCarSpecifications(
+	data: CarSpecifications & { car_id: string },
+): Promise<{ success: boolean; data?: CarSpecifications; error?: string }> {
+	try {
+		// First check if specs already exist for this car
+		const existingSpecs = await database.listDocuments(
+			databaseId,
+			carspecificationscollectionid,
+			[Query.equal("car_id", data.car_id)],
+		);
 
+		// Remove car_id from data to match collection schema
+		const { car_id, ...docData } = data;
 
+		if (existingSpecs.documents.length > 0) {
+			// Update existing document
+			const docId = existingSpecs.documents[0].$id;
+			const updatedSpecs = await database.updateDocument(
+				databaseId,
+				carspecificationscollectionid,
+				docId,
+				docData,
+			);
+
+			// Revalidate paths
+			revalidatePath(`/dashboard/cars/${car_id}`);
+			revalidatePath(`/dashboard/cars/edit/specifications`);
+
+			return { success: true, data: updatedSpecs as CarSpecifications };
+		} else {
+			// Create new specification document
+			const newSpecs = await saveCarSpecifications(data);
+			return newSpecs;
+		}
+	} catch (error) {
+		console.error("Error updating car specifications:", error);
+		return { success: false, error: "Failed to update car specifications" };
+	}
+}
+
+export async function updateCarFeatures(
+	data: CarFeaturesOptions & { car_id: string },
+): Promise<{ success: boolean; data?: CarFeaturesOptions; error?: string }> {
+	try {
+		// First check if features already exist for this car
+		const existingFeatures = await database.listDocuments(
+			databaseId,
+			specificcarfeaturescollectionid,
+			[Query.equal("car_id", data.car_id)],
+		);
+
+		// Remove car_id from data to match collection schema
+		const { car_id, ...docData } = data;
+
+		if (existingFeatures.documents.length > 0) {
+			// Update existing document
+			const docId = existingFeatures.documents[0].$id;
+			const updatedFeatures = await database.updateDocument(
+				databaseId,
+				specificcarfeaturescollectionid,
+				docId,
+				docData,
+			);
+
+			// Revalidate paths
+			revalidatePath(`/dashboard/cars/${car_id}`);
+			revalidatePath(`/dashboard/cars/edit/features`);
+
+			return { success: true, data: updatedFeatures as CarFeaturesOptions };
+		} else {
+			// Create new features document
+			const newFeatures = await saveCarFeatures(data);
+			return newFeatures;
+		}
+	} catch (error) {
+		console.error("Error updating car features:", error);
+		return { success: false, error: "Failed to update car features" };
+	}
+}
+
+export async function updateOwnershipDocumentation(
+	data: OwnershipDocumentation & { car_id: string },
+): Promise<{
+	success: boolean;
+	data?: OwnershipDocumentation;
+	error?: string;
+}> {
+	try {
+		// First check if ownership docs already exist for this car
+		const existingDocs = await database.listDocuments(
+			databaseId,
+			ownershipdocumentationcollectionid,
+			[Query.equal("car_id", data.car_id)],
+		);
+
+		// Remove car_id from data to match collection schema
+		const { car_id, ...docData } = data;
+
+		if (existingDocs.documents.length > 0) {
+			// Update existing document
+			const docId = existingDocs.documents[0].$id;
+			const updatedDocs = await database.updateDocument(
+				databaseId,
+				ownershipdocumentationcollectionid,
+				docId,
+				docData,
+			);
+
+			// Revalidate paths
+			revalidatePath(`/dashboard/cars/${car_id}`);
+			revalidatePath(`/dashboard/cars/edit/ownership`);
+
+			return { success: true, data: updatedDocs as OwnershipDocumentation };
+		} else {
+			// Create new document
+			const newDocs = await saveOwnershipDocumentation(data);
+			return newDocs;
+		}
+	} catch (error) {
+		console.error("Error updating ownership documentation:", error);
+		return { success: false, error: "Failed to update ownership documentation" };
+	}
+}
+
+export async function updatePricingPayment(
+	data: PricingPayment & { car_id: string },
+): Promise<{ success: boolean; data?: PricingPayment; error?: string }> {
+	try {
+		// First check if pricing docs already exist for this car
+		const existingPricing = await database.listDocuments(
+			databaseId,
+			pricingpaymentcollectionid,
+			[Query.equal("car_id", data.car_id)],
+		);
+
+		// Remove car_id from data to match collection schema
+		const { car_id, ...docData } = data;
+
+		if (existingPricing.documents.length > 0) {
+			// Update existing document
+			const docId = existingPricing.documents[0].$id;
+			const updatedPricing = await database.updateDocument(
+				databaseId,
+				pricingpaymentcollectionid,
+				docId,
+				docData,
+			);
+
+			// Revalidate paths
+			revalidatePath(`/dashboard/cars/${car_id}`);
+			revalidatePath(`/dashboard/cars/edit/pricing`);
+
+			return { success: true, data: updatedPricing as PricingPayment };
+		} else {
+			// Create new document
+			const newPricing = await savePricingPayment(data);
+			return newPricing;
+		}
+	} catch (error) {
+		console.error("Error updating pricing information:", error);
+		return { success: false, error: "Failed to update pricing information" };
+	}
+}
 
 export const getBigDeals = async () => {
 	try {
-	  // Query for cars with big_deal flag set to true
-	  const queries = [
-		Query.equal("big_deal", true),
-		Query.equal("status", "published"),
-		Query.equal("availability", true),
-		Query.limit(6), // Limit to 6 cars for the carousel
-	  ]
-  
-	  const response = await database.listDocuments(databaseId, carinfocollectionId, queries)
-  
-	  // The car info documents already contain all the nested data we need
-	  // No need to fetch related entities separately
-	  return { success: true, data: response.documents }
+		// Query for cars with big_deal flag set to true
+		const queries = [
+			Query.equal("big_deal", true),
+			Query.equal("status", "published"),
+			Query.equal("availability", true),
+			Query.limit(6), // Limit to 6 cars for the carousel
+		];
+
+		const response = await database.listDocuments(
+			databaseId,
+			carinfocollectionId,
+			queries,
+		);
+
+		// The car info documents already contain all the nested data we need
+		// No need to fetch related entities separately
+		return { success: true, data: response.documents };
 	} catch (error) {
-	  console.error("Error fetching big deals:", error)
-	  return { success: false, error: "Failed to fetch big deals" }
+		console.error("Error fetching big deals:", error);
+		return { success: false, error: "Failed to fetch big deals" };
 	}
-  }
+};
+
+export async function updateCarPhotos(formData: FormData): Promise<{
+	success: boolean;
+	data?: { imageIds: string[] };
+	error?: string;
+}> {
+	try {
+		const car_id = formData.get("car_id") as string;
+
+		if (!car_id) {
+			return { success: false, error: "Car ID is missing" };
+		}
+
+		// Get the file entries from the formData
+		const fileKeys = Array.from(formData.keys()).filter((key) =>
+			key.startsWith("photo_"),
+		);
+
+		if (fileKeys.length === 0) {
+			return { success: false, error: "No files provided" };
+		}
+
+		const uploadedImageIds: string[] = [];
+
+		// Upload each file to storage
+		for (const key of fileKeys) {
+			const file = formData.get(key) as File;
+
+			if (!file) continue;
+
+			// Create a unique file name
+			const fileName = `${ID.unique()}-${file.name}`;
+
+			// Upload to storage
+			const uploadedFile = await storage.createFile(
+				process.env.APPWRITE_STORAGE_BUCKET_ID!,
+				ID.unique(),
+				file,
+			);
+
+			// Get file URL
+			const fileUrl = storage.getFileView(
+				process.env.APPWRITE_STORAGE_BUCKET_ID!,
+				uploadedFile.$id,
+			);
+
+			// Add the image to the car document
+			const result = await database.createDocument(
+				databaseId,
+				"car_images", // Collection ID for car images (Adjust as needed)
+				ID.unique(),
+				{
+					car_id,
+					url: fileUrl,
+					file_id: uploadedFile.$id,
+					file_name: fileName,
+				},
+			);
+
+			uploadedImageIds.push(result.$id);
+		}
+
+		// Revalidate the car details page
+		revalidatePath(`/dashboard/cars/${car_id}`);
+
+		return {
+			success: true,
+			data: { imageIds: uploadedImageIds },
+		};
+	} catch (error) {
+		console.error("Error uploading photos:", error);
+		return { success: false, error: "Failed to upload photos" };
+	}
+}
+
+export async function deleteCarPhoto(
+	car_id: string,
+	photo_id: string,
+): Promise<{ success: boolean; error?: string }> {
+	try {
+		// Get the photo document to get the file ID
+		const photo = await database.getDocument(
+			databaseId,
+			"car_images", // Collection ID for car images (Adjust as needed)
+			photo_id,
+		);
+
+		// Delete the file from storage
+		if (photo.file_id) {
+			await storage.deleteFile(
+				process.env.APPWRITE_STORAGE_BUCKET_ID!,
+				photo.file_id,
+			);
+		}
+
+		// Delete the photo document
+		await database.deleteDocument(
+			databaseId,
+			"car_images", // Collection ID for car images (Adjust as needed)
+			photo_id,
+		);
+
+		// Revalidate the car details page
+		revalidatePath(`/dashboard/cars/${car_id}`);
+
+		return { success: true };
+	} catch (error) {
+		console.error("Error deleting photo:", error);
+		return { success: false, error: "Failed to delete photo" };
+	}
+}

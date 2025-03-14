@@ -73,22 +73,22 @@ export default function CarDetails({ car }: CarDetailsProps) {
   const navigateToEdit = (section: string) => {
     switch (section) {
       case "basic":
-        router.push(`/dashboard/cars/new?id=${car.$id}&mode=edit`);
+        router.push(`/dashboard/cars/edit?id=${car.$id}`);
         break;
       case "specifications":
-        router.push(`/dashboard/cars/new/car-specification?id=${car.$id}&mode=edit`);
+        router.push(`/dashboard/cars/edit/specifications?id=${car.$id}`);
         break;
       case "features":
-        router.push(`/dashboard/cars/new/car-features?id=${car.$id}&mode=edit`);
+        router.push(`/dashboard/cars/edit/features?id=${car.$id}`);
         break;
       case "ownership":
-        router.push(`/dashboard/cars/new/ownership?id=${car.$id}&mode=edit`);
+        router.push(`/dashboard/cars/edit/ownership?id=${car.$id}`);
         break;
       case "pricing":
-        router.push(`/dashboard/cars/new/pricing?id=${car.$id}&mode=edit`);
+        router.push(`/dashboard/cars/edit/pricing?id=${car.$id}`);
         break;
       case "photos":
-        router.push(`/dashboard/cars/new/photo-video?id=${car.$id}&mode=edit`);
+        router.push(`/dashboard/cars/edit/photos?id=${car.$id}`);
         break;
       default:
         break;

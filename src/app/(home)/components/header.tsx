@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Heart, Menu, User, ShoppingCart } from "lucide-react"
+import { Heart, Menu, User, ShoppingCart, UserPlus } from "lucide-react"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { useEffect, useState } from "react"
 
@@ -227,7 +227,7 @@ export function Header() {
             initial={{ opacity: 0 }}
             animate={{ 
               opacity: 1,
-              backgroundColor: isScrolled ? "rgba(255, 255, 255, 0.9)" : "rgba(0, 0, 0, 0.2)",
+              backgroundColor: isScrolled ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.8)",
               backdropFilter: `blur(${headerBlur.get()}px)`,
               borderColor: isScrolled ? "rgba(0, 0, 0, 0.1)" : "transparent"
             }}
@@ -244,9 +244,6 @@ export function Header() {
                   variant="ghost" 
                   size="icon" 
                   className="md:hidden"
-                  style={{ 
-                    color: isScrolled ? "black" : "white",
-                  }}
                 >
                   <Menu className="h-6 w-6" />
                   <span className="sr-only">Toggle menu</span>
@@ -257,24 +254,50 @@ export function Header() {
                   <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
                     <span className="text-xl font-bold text-primary">Kashi&Karz</span>
                   </Link>
-                  {navItems.map((item) => (
-                    <Link key={item.title} href={item.href} className="hover:text-primary">
-                      {item.title}
-                    </Link>
-                  ))}
+                  
+                  <div className="space-y-2">
+                    {navItems.map((item) => (
+                      <div key={item.title} className="pb-4">
+                        <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {item.content.flatMap(section => 
+                            section.items.slice(0, 3).map(subItem => (
+                              <Link 
+                                key={subItem.title} 
+                                href={subItem.href} 
+                                className="rounded-md px-3 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
+                              >
+                                {subItem.title}
+                              </Link>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
                   <div className="mt-4 grid gap-2">
-                    <Button variant="outline" className="w-full justify-start">
-                      <User className="mr-2 h-4 w-4" />
-                      Log in
-                    </Button>
-                    <Button className="w-full justify-start">
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      Buying
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Heart className="mr-2 h-4 w-4" />
-                      Selling
-                    </Button>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold">Account</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline" className="justify-start">
+                        <User className="mr-2 h-4 w-4" />
+                        Sign in
+                      </Button>
+                      <Button variant="outline" className="justify-start">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Register
+                      </Button>
+                      <Button className="justify-start">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Buying
+                      </Button>
+                      <Button variant="outline" className="justify-start">
+                        <Heart className="mr-2 h-4 w-4" />
+                        Selling
+                      </Button>
+                    </div>
                   </div>
                 </nav>
               </SheetContent>
@@ -282,7 +305,6 @@ export function Header() {
             <div className="flex items-center gap-2">
               <motion.span
                 initial={{ opacity: 1 }}
-                animate={{ color: isScrolled ? "black" : "white" }}
                 transition={{ duration: 0.3 }}
               >
                 <Link href="/" className="flex items-center gap-2">
@@ -295,7 +317,6 @@ export function Header() {
                 {navItems.map((item) => (
                   <NavigationMenuItem key={item.title}>
                     <NavigationMenuTrigger 
-                      style={{ color: isScrolled ? "black" : "white" }}
                       className="transition-colors duration-300 data-[state=open]:bg-transparent"
                     >
                       {item.title}
@@ -329,14 +350,12 @@ export function Header() {
             <div className="flex items-center gap-4">
               <motion.div
                 initial={{ opacity: 1 }}
-                animate={{ color: isScrolled ? "black" : "white" }}
                 transition={{ duration: 0.3 }}
               >
                 <div className="hidden md:flex md:gap-2">
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    style={{ color: isScrolled ? "black" : "white" }}
                     className="transition-colors duration-300"
                   >
                     <Heart className="h-5 w-5" />
@@ -345,33 +364,12 @@ export function Header() {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    style={{ color: isScrolled ? "black" : "white" }}
-                    className="transition-colors duration-300"
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    <span className="sr-only">Buying</span>
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    style={{ color: isScrolled ? "black" : "white" }}
                     className="transition-colors duration-300"
                   >
                     <User className="h-5 w-5" />
                     <span className="sr-only">Account</span>
                   </Button>
                 </div>
-
-                <Button 
-                  variant={isScrolled ? "outline" : "ghost"} 
-                  className="hidden md:flex transition-all duration-300"
-                  style={{ 
-                    borderColor: isScrolled ? "" : "white",
-                    color: isScrolled ? "" : "white"
-                  }}
-                >
-                  Menu
-                </Button>
               </motion.div>
             </div>
           </div>
