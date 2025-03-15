@@ -46,7 +46,7 @@ export async function submitReview(data: ReviewFormData, carId: string, userId: 
 // Get reviews for a specific car with pagination
 export async function getReviewsForCar(carId: string, page = 1, limit = 5, sort = "newest") {
   try {
-    const queries = [Query.equal("car_id", carId)]
+    const queries = [Query.equal("car_info", carId)]
 
     // Add sorting
     if (sort === "newest") {
@@ -141,7 +141,7 @@ export async function getReviewStatsForCar(
   try {
     // Fetch all reviews for the car
     const queries = [
-      Query.equal("car_id", carId),
+      Query.equal("car_info", carId),
       Query.limit(100), // Adjust as needed
     ]
 

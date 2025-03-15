@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Plus, Minus, ChevronRight, ChevronLeft, Check } from "lucide-react"
+import { useMutation } from "@tanstack/react-query"
+import { z } from "zod"
 import { RatingStars } from "@/components/reviews/rating-stars"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,7 +24,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { submitReview } from "@/lib/review-actions"
-import { reviewSchema, type ReviewFormData } from "@/types/review"
+import { toast } from "@/hooks/use-toast"
+
+// Define Zod schema for form validation
+const reviewSchema = z.object({
+  rating: z.number().min(1, { message: "Please select a rating" }).max(5),
+  title: z.string().min(3, { message: "Title must be at least 3 characters" }).max(300),
+  comment: z.string().min(20, { message: "Review must be at least 20 characters" }).max(1000),
+  pros: z.array(z.string()).optional(),
+  cons: z.array(z.string()).optional(),
+  recommend: z.boolean(),
+  ownershipDuration: z.enum([
+    "less-than-month",
+    "1-6-months",
+    "6-12-months",
+    "1-3-years",
+    "3-plus-years"
+  ]),
+  purchaseType: z.enum(["new", "used", "leased", "rented", "test-drive"]),
+  verifiedPurchase: z.boolean().default(false),
+})
+
+// Infer TypeScript type from Zod schema
+type ReviewFormData = z.infer<typeof reviewSchema>
 
 interface ReviewFormProps {
   carId: string
@@ -37,17 +61,19 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
   const [cons, setCons] = useState<string[]>([])
   const [newPro, setNewPro] = useState("")
   const [newCon, setNewCon] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
 
+  // Set up form with react-hook-form and zod validation
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors },
   } = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
+    mode: "onChange", // Validate on change for real-time feedback
     defaultValues: {
       rating: 0,
       title: "",
@@ -61,7 +87,37 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
     },
   })
 
+  // TanStack Query v5 mutation
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (data: ReviewFormData) => {
+      return await submitReview(data, carId, userId)
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        setShowSuccessDialog(true)
+        // Optionally revalidate the path to show updated reviews
+        router.refresh()
+      } else {
+        toast({
+          title: "Error submitting review",
+          description: result.error || "Something went wrong. Please try again.",
+          variant: "destructive",
+        })
+      }
+    },
+    onError: (error) => {
+      console.error("Error submitting review:", error)
+      toast({
+        title: "Error submitting review",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+    },
+  })
+
   const rating = watch("rating")
+  const title = watch("title")
+  const comment = watch("comment")
 
   const handleRatingChange = (value: number) => {
     setValue("rating", value, { shouldValidate: true })
@@ -70,7 +126,7 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
   const addPro = () => {
     if (newPro.trim() && pros.length < 5) {
       setPros([...pros, newPro.trim()])
-      setValue("pros", [...pros, newPro.trim()])
+      setValue("pros", [...pros, newPro.trim()], { shouldValidate: true })
       setNewPro("")
     }
   }
@@ -78,13 +134,13 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
   const removePro = (index: number) => {
     const updatedPros = pros.filter((_, i) => i !== index)
     setPros(updatedPros)
-    setValue("pros", updatedPros)
+    setValue("pros", updatedPros, { shouldValidate: true })
   }
 
   const addCon = () => {
     if (newCon.trim() && cons.length < 5) {
       setCons([...cons, newCon.trim()])
-      setValue("cons", [...cons, newCon.trim()])
+      setValue("cons", [...cons, newCon.trim()], { shouldValidate: true })
       setNewCon("")
     }
   }
@@ -92,39 +148,42 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
   const removeCon = (index: number) => {
     const updatedCons = cons.filter((_, i) => i !== index)
     setCons(updatedCons)
-    setValue("cons", updatedCons)
+    setValue("cons", updatedCons, { shouldValidate: true })
   }
 
   const nextStep = () => {
-    setStep(step + 1)
+    if (step === 1) {
+      // Validate first step fields before proceeding
+      trigger(["rating", "title", "comment"]).then((isValid) => {
+        if (isValid) setStep(step + 1)
+      })
+    } else {
+      setStep(step + 1)
+    }
   }
 
   const prevStep = () => {
     setStep(step - 1)
   }
 
-  const onSubmit = async (data: ReviewFormData) => {
-    setIsSubmitting(true)
-
-    try {
-      const result = await submitReview(data, carId, userId)
-
-      if (result.success) {
-        setShowSuccessDialog(true)
-      } else {
-        // Handle error
-        console.error("Error submitting review:", result.error)
-      }
-    } catch (error) {
-      console.error("Error submitting review:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
+  const onSubmit = (data: ReviewFormData) => {
+    // Use TanStack mutation to submit the form
+    mutate(data)
   }
 
   const handleSuccessDialogClose = () => {
     setShowSuccessDialog(false)
     router.push(`/car/${carId}`)
+  }
+
+  // Function to check if fields are valid for current step
+  const currentStepIsValid = () => {
+    if (step === 1) {
+      return rating > 0 && 
+        title && title.length >= 3 && 
+        comment && comment.length >= 20;
+    }
+    return true;
   }
 
   return (
@@ -173,7 +232,9 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
             {step === 1 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Your Rating</Label>
+                  <Label className={errors.rating ? "text-destructive" : ""}>
+                    Your Rating<span className="text-destructive"> *</span>
+                  </Label>
                   <div className="flex justify-center py-4">
                     <RatingStars rating={rating} size="lg" interactive onChange={handleRatingChange} />
                   </div>
@@ -183,30 +244,40 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="title">Review Title</Label>
+                  <Label htmlFor="title" className={errors.title ? "text-destructive" : ""}>
+                    Review Title<span className="text-destructive"> *</span>
+                  </Label>
                   <Input
                     id="title"
                     placeholder="Summarize your experience"
-                    className="text-lg py-6"
+                    className={`text-lg py-6 ${errors.title ? "border-destructive" : ""}`}
                     {...register("title")}
                   />
                   {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
+                  {title && <p className="text-xs text-muted-foreground mt-1">{title.length}/100 characters</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="comment">Your Review</Label>
+                  <Label htmlFor="comment" className={errors.comment ? "text-destructive" : ""}>
+                    Your Review<span className="text-destructive"> *</span>
+                  </Label>
                   <Textarea
                     id="comment"
                     placeholder="Share your experience with this car..."
-                    className="min-h-[150px]"
+                    className={`min-h-[150px] ${errors.comment ? "border-destructive" : ""}`}
                     {...register("comment")}
                   />
                   {errors.comment && <p className="text-sm text-destructive mt-1">{errors.comment.message}</p>}
+                  {comment && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {comment.length}/1000 characters (minimum 20)
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label>Would you recommend this car?</Label>
-                  <RadioGroup defaultValue="true" onValueChange={(value) => setValue("recommend", value === "true")}>
+                  <RadioGroup defaultValue="true" onValueChange={(value) => setValue("recommend", value === "true", { shouldValidate: true })}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="true" id="recommend-yes" />
                       <Label htmlFor="recommend-yes">Yes, I would recommend this car</Label>
@@ -290,7 +361,7 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
                   <Label>How long have you owned this car?</Label>
                   <RadioGroup
                     defaultValue="1-6-months"
-                    onValueChange={(value) => setValue("ownershipDuration", value as any)}
+                    onValueChange={(value) => setValue("ownershipDuration", value as any, { shouldValidate: true })}
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="less-than-month" id="less-than-month" />
@@ -317,7 +388,10 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
 
                 <div className="space-y-2">
                   <Label>How did you acquire this car?</Label>
-                  <RadioGroup defaultValue="used" onValueChange={(value) => setValue("purchaseType", value as any)}>
+                  <RadioGroup 
+                    defaultValue="used" 
+                    onValueChange={(value) => setValue("purchaseType", value as any, { shouldValidate: true })}
+                  >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="new" id="new" />
                       <Label htmlFor="new">Purchased new</Label>
@@ -345,7 +419,7 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
                   <Checkbox
                     id="verified-purchase"
                     onCheckedChange={(checked) => {
-                      setValue("verifiedPurchase", checked === true)
+                      setValue("verifiedPurchase", checked === true, { shouldValidate: true })
                     }}
                   />
                   <div className="grid gap-1.5 leading-none">
@@ -377,12 +451,16 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
           )}
 
           {step < 3 ? (
-            <Button type="button" onClick={nextStep}>
+            <Button 
+              type="button" 
+              onClick={nextStep} 
+              disabled={step === 1 && !currentStepIsValid()}
+            >
               Next <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
-            <Button type="submit" form="review-form" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Submit Review"}
+            <Button type="submit" form="review-form" disabled={isPending}>
+              {isPending ? "Submitting..." : "Submit Review"}
             </Button>
           )}
         </CardFooter>
@@ -405,4 +483,3 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
     </>
   )
 }
-

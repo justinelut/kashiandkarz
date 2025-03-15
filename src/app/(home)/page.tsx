@@ -2,7 +2,6 @@ import { HeroSection } from "@/components/hero-section";
 import { TrustpilotReviews } from "@/components/trustpilot-reviews";
 import { CarSearch } from "@/components/car-search";
 import { FeaturedCars } from "@/components/featured-cars";
-import { Footer } from "@/components/footer";
 import { getBigDeals, getCarFeatures } from "@/lib/actions";
 import { BigDeals } from "./components/big-deals";
 import { BrowseSection } from "./components/browse-section";
@@ -17,7 +16,7 @@ export default async function Home() {
 
 	return (
 		<div>
-			<main className="flex-1">
+			<main className="flex-1 pt-20">
 				<HeroSection bigDeal={featuredBigDeal} />
 
 				<div className="container mx-auto py-10">

@@ -2,8 +2,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ReviewsList } from "@/components/reviews/reviews-list"
 import { ReviewStatsComponent } from "@/components/reviews/review-stats"
-import { getCarBySlug } from "@/lib/actions"
 import { getReviewsForCar, getReviewStatsForCar } from "@/lib/review-actions"
+import { getCarBySlug } from "@/lib/car-details-actions"
 
 export default async function CarReviewsPage({ params }: { params: { slug: string } }) {
   // Get car details
@@ -31,7 +31,7 @@ export default async function CarReviewsPage({ params }: { params: { slug: strin
   ])
 
   return (
-    <div className="container py-8">
+    <div className="container pb-8 mx-auto max-w-6xl pt-24 px-4">
       <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">{carName.trim()} Reviews</h1>

@@ -11,7 +11,7 @@ export default async function CarPage({ params }: { params: { slug: string } }) 
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 mx-auto max-w-6xl pt-20">
       <CarDetailsView car={result.data} />
 
       <div className="mt-8">

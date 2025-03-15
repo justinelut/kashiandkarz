@@ -40,8 +40,6 @@ import { redirect } from "next/navigation";
 const Login = () => {
 	const { loginWithOAuth, signIn } = useAuth();
 
-
-
 	const form = useForm<SignInForm>({
 		resolver: zodResolver(signInSchema),
 		defaultValues: {
@@ -165,7 +163,7 @@ const Login = () => {
 								<div className="flex-grow border-t border-gray-300"></div>
 							</div>
 
-							<Button
+							{/* <Button
 								type="button"
 								variant="outline"
 								className="w-full"
@@ -180,7 +178,7 @@ const Login = () => {
 									className="h-5 w-5 mr-2"
 								/>
 								Continue with Google
-							</Button>
+							</Button> */}
 
 							<div className="text-center mt-4">
 								<span className="text-gray-500">Don't have an account? </span>

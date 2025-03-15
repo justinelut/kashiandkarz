@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { ReviewForm } from "@/components/reviews/review-form"
-import { getCarBySlug } from "@/lib/actions"
+import { getCarBySlug } from "@/lib/car-details-actions"
+
 
 // Mock function to get the current user ID
 // In a real app, this would come from your authentication system
@@ -28,7 +29,7 @@ export default async function WriteReviewPage({ params }: { params: { slug: stri
   const carName = `${car.car_make?.name || ""} ${car.car_model || ""} ${car.year || ""}`
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 mx-auto max-w-5xl pt-20">
       <ReviewForm carId={car.$id} userId={userId} carName={carName.trim()} />
     </div>
   )
