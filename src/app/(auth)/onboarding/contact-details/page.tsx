@@ -51,7 +51,7 @@ export default function ContactDetailsPage() {
         title: "Contact details saved",
         description: "Let's continue with your inventory details",
       })
-      router.push("/onboarding/inventory_info")
+      router.push("/onboarding/inventory-info")
     },
     onError: (error) => {
       toast({
@@ -67,7 +67,7 @@ export default function ContactDetailsPage() {
   }
 
   return (
-    <OnboardingLayout current_step="contact_details">
+    <OnboardingLayout current_step="contact-details">
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold">Contact Details</h2>

@@ -1,7 +1,8 @@
-export interface dealer_basic_info {
+export interface DealerBasicInfo {
     business_name: string
     business_type: "independent" | "franchise"
     years_in_business: "0-1" | "1-5" | "6-10" | "11-20" | "20+"
+    step: number
     $id?: string
   }
   

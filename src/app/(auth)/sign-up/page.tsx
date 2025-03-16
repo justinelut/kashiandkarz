@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { SignupPage } from "@/components/auth/dealer-signup-form";
+import { isAuthenticated } from "@/lib/appwrite";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
 	title: "Dealer Signup",
@@ -9,7 +11,11 @@ export const metadata: Metadata = {
 		"Join our network of car dealers and start listing your vehicles today",
 };
 
-export default function DealerSignupPage() {
+export default async function DealerSignupPage() {
+	const authenticated = await isAuthenticated();
+	if (authenticated) {
+		redirect("/");
+	}
 	return (
 		<div className="container h-screen relative flex-col items-center justify-center md:grid lg:max-w-none  lg:px-0">
 			<Link
@@ -18,7 +24,6 @@ export default function DealerSignupPage() {
 			>
 				Already a dealer? Login
 			</Link>
-
 
 			<div className="lg:p-8">
 				<div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[550px]">

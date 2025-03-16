@@ -12,4 +12,5 @@ export type UserProfile = {
   role?: string;
   cover?: string;
   profile_completion?: number;
+  accept_terms?:boolean;
 };

@@ -8,7 +8,7 @@ export default function OnboardingPage() {
 
 	useEffect(() => {
 		// Redirect to the first step
-		router.push("/onboarding/business_info");
+		router.push("/onboarding/business-info");
 	}, [router]);
 
 	return (

@@ -76,7 +76,7 @@ export default function InventoryInfoPage() {
         title: "Inventory details saved",
         description: "Let's finish with your preferences",
       })
-      router.push("/onboarding/dealer_preferences")
+      router.push("/onboarding/dealer-preferences")
     },
     onError: (error) => {
       toast({

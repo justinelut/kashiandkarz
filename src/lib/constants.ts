@@ -27,6 +27,8 @@ export const carcolorscollectionid = "67c86a92000277171665";
 export const carTypeCollectionId = "67cee30c001fd65329ac";
 export const carmakecollectionsId = "67c72fe00000db170b7b";
 
+export const usercollectionid = "67d16058002af6428ea6";
+export const businesscollectionid = "67d73dc3001ee0da4374"
 // Storage bucket IDs
 export const storageBucketId = process.env.APPWRITE_STORAGE_BUCKET_ID || "";
 
