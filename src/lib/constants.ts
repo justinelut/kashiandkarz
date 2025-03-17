@@ -4,9 +4,9 @@ export const carsCollectionId = "67cf10af003268a33d9f";
 export const bigDealsCollectionId = process.env.APPWRITE_BIG_DEALS_COLLECTION_ID || "";
 export const carImagesCollectionId = "car_images";
 export const companyCollectionId = "company";
-export const messagesCollectionId = "messages";
+export const messagesCollectionId = "67d15fc7003e6140fb31";
 export const callbacksCollectionId = "67d15fd400083417092d";
-export const testDrivesCollectionId = "test_drives";
+export const testDrivesCollectionId = "67d15fbb00268b54fd35";
 
 // Collection IDs from the actions file
 

@@ -86,6 +86,11 @@ export function ActionButtons({
                   <TabsContent value="message" className="space-y-4 pt-4">
                     <EnquiryForm
                       carId={carId}
+                      dealerId={dealerId}
+                      dealerName={dealerName}
+                      dealerPhone={dealerPhone}
+                      dealerLocation={dealerLocation}
+                      isAvailable={isAvailable}
                       onSuccess={() => {
                         setEnquirySubmitted(true)
                         toast( "Enquiry Submitted",{
@@ -198,6 +203,11 @@ export function ActionButtons({
                 </DialogHeader>
                 <TestDriveForm
                   carId={carId}
+                  dealerId={dealerId}
+                  dealerName={dealerName}
+                  dealerPhone={dealerPhone}
+                  dealerLocation={dealerLocation}
+                  isAvailable={isAvailable}
                   onSuccess={() => {
                     setTestDriveScheduled(true)
                     toast("Test Drive Scheduled",{

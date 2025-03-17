@@ -34,15 +34,15 @@ const reviewSchema = z.object({
   pros: z.array(z.string()).optional(),
   cons: z.array(z.string()).optional(),
   recommend: z.boolean(),
-  ownershipDuration: z.enum([
+  ownership_duration: z.enum([
     "less-than-month",
     "1-6-months",
     "6-12-months",
     "1-3-years",
     "3-plus-years"
   ]),
-  purchaseType: z.enum(["new", "used", "leased", "rented", "test-drive"]),
-  verifiedPurchase: z.boolean().default(false),
+  purchase_type: z.enum(["new", "used", "leased", "rented", "test-drive"]),
+  verified_purchase: z.boolean().default(false),
 })
 
 // Infer TypeScript type from Zod schema
@@ -52,9 +52,11 @@ interface ReviewFormProps {
   carId: string
   userId: string
   carName: string
+  dealer: string
+  businessId: string
 }
 
-export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
+export function ReviewForm({ carId, userId, carName, dealer, businessId }: ReviewFormProps) {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [pros, setPros] = useState<string[]>([])
@@ -81,16 +83,16 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
       pros: [],
       cons: [],
       recommend: true,
-      ownershipDuration: "1-6-months",
-      purchaseType: "used",
-      verifiedPurchase: false,
+      ownership_duration: "1-6-months",
+      purchase_type: "used",
+      verified_purchase: false,
     },
   })
 
   // TanStack Query v5 mutation
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: ReviewFormData) => {
-      return await submitReview(data, carId, userId)
+      return await submitReview(data, carId, userId, dealer, businessId)
     },
     onSuccess: (result) => {
       if (result.success) {
@@ -361,7 +363,7 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
                   <Label>How long have you owned this car?</Label>
                   <RadioGroup
                     defaultValue="1-6-months"
-                    onValueChange={(value) => setValue("ownershipDuration", value as any, { shouldValidate: true })}
+                    onValueChange={(value) => setValue("ownership_duration", value as any, { shouldValidate: true })}
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="less-than-month" id="less-than-month" />
@@ -390,7 +392,7 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
                   <Label>How did you acquire this car?</Label>
                   <RadioGroup 
                     defaultValue="used" 
-                    onValueChange={(value) => setValue("purchaseType", value as any, { shouldValidate: true })}
+                    onValueChange={(value) => setValue("purchase_type", value as any, { shouldValidate: true })}
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="new" id="new" />
@@ -419,7 +421,7 @@ export function ReviewForm({ carId, userId, carName }: ReviewFormProps) {
                   <Checkbox
                     id="verified-purchase"
                     onCheckedChange={(checked) => {
-                      setValue("verifiedPurchase", checked === true, { shouldValidate: true })
+                      setValue("verified_purchase", checked === true, { shouldValidate: true })
                     }}
                   />
                   <div className="grid gap-1.5 leading-none">

@@ -2,6 +2,7 @@
 
 import { Databases, Client, ID } from "node-appwrite"
 import type { EnquiryFormData, CallbackFormData, TestDriveFormData, FormSubmissionResult } from "@/types/action-buttons"
+import { callbacksCollectionId, messagesCollectionId, testDrivesCollectionId } from "./constants"
 
 // Initialize Appwrite client
 const client = new Client()
@@ -13,18 +14,17 @@ const database = new Databases(client)
 const databaseId = process.env.APPWRITE_DATABASE_ID as string
 
 // Collection IDs
-const enquiriesCollectionId = "enquiries"
-const callbacksCollectionId = "callbacks"
-const testDrivesCollectionId = "test_drives"
+
+
 
 // Submit enquiry
-export async function submitEnquiry(data: EnquiryFormData, carId: string): Promise<FormSubmissionResult> {
+export async function submitEnquiry(data: EnquiryFormData, carId: string, dealerId: string): Promise<FormSubmissionResult> {
   try {
-    await database.createDocument(databaseId, enquiriesCollectionId, ID.unique(), {
+    await database.createDocument(databaseId, messagesCollectionId, ID.unique(), {
       ...data,
-      car_id: carId,
-      status: "new",
-      created_at: new Date().toISOString(),
+      car_info: carId,
+      status: "pending",
+      dealer: dealerId,
     })
 
     return {
@@ -41,11 +41,12 @@ export async function submitEnquiry(data: EnquiryFormData, carId: string): Promi
 }
 
 // Request callback
-export async function requestCallback(data: CallbackFormData, carId: string): Promise<FormSubmissionResult> {
+export async function requestCallback(data: CallbackFormData, carId: string, dealerId: string): Promise<FormSubmissionResult> {
   try {
     await database.createDocument(databaseId, callbacksCollectionId, ID.unique(), {
       ...data,
-      car: carId,
+      car_info: carId,
+      dealer: dealerId,
       status: "pending",
     })
 
@@ -63,13 +64,13 @@ export async function requestCallback(data: CallbackFormData, carId: string): Pr
 }
 
 // Schedule test drive
-export async function scheduleTestDrive(data: TestDriveFormData, carId: string): Promise<FormSubmissionResult> {
+export async function scheduleTestDrive(data: TestDriveFormData, carId: string, dealerId: string): Promise<FormSubmissionResult> {
   try {
     await database.createDocument(databaseId, testDrivesCollectionId, ID.unique(), {
       ...data,
-      car_id: carId,
-      status: "scheduled",
-      created_at: new Date().toISOString(),
+      car_info: carId,
+      dealer: dealerId,
+      status: "pending",
     })
 
     return {

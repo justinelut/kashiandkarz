@@ -14,11 +14,16 @@ import { enquiryFormSchema } from "@/lib/validations/action-buttons-schemas"
 import { submitEnquiry } from "@/lib/action-buttons-actions"
 
 interface EnquiryFormProps {
-  car_id: string
+  carId: string
   onSuccess: () => void
+  dealerId: string
+  dealerName: string
+  dealerPhone: string
+  dealerLocation: string
+  isAvailable: boolean
 }
 
-export function EnquiryForm({ car_id, onSuccess }: EnquiryFormProps) {
+export function EnquiryForm({ carId, onSuccess, dealerId, dealerName, dealerPhone, dealerLocation, isAvailable }: EnquiryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Define form with Zod validation
@@ -37,7 +42,7 @@ export function EnquiryForm({ car_id, onSuccess }: EnquiryFormProps) {
   async function onSubmit(values: z.infer<typeof enquiryFormSchema>) {
     setIsSubmitting(true)
     try {
-      const result = await submitEnquiry(values, car_id)
+      const result = await submitEnquiry(values, carId, dealerId)
       if (result.success) {
         onSuccess()
       } else {

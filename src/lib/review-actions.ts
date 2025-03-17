@@ -18,7 +18,7 @@ const reviewsCollectionId = "67d2e79d003b3d7bf86d" // This would be the actual c
 const usersCollectionId = "67d16058002af6428ea6" // This would be the actual users collection ID
 
 // Submit a new review
-export async function submitReview(data: ReviewFormData, carId: string, userId: string) {
+export async function submitReview(data: ReviewFormData, carId: string, userId: string, dealer: string, businessId: string) {
   try {
     // Validate the review data
     const validatedData = reviewSchema.parse(data)
@@ -26,8 +26,10 @@ export async function submitReview(data: ReviewFormData, carId: string, userId: 
     // Create the review document
     const review = await database.createDocument(databaseId, reviewsCollectionId, ID.unique(), {
       ...validatedData,
-      car_id: carId,
-      user_id: userId,
+      car_info: carId,
+      dealer,
+      business: businessId,
+      user: userId,
       helpful_count: 0,
       unhelpful_count: 0,
       reported: false,

@@ -17,9 +17,10 @@ import { requestCallback } from "@/lib/action-buttons-actions"
 interface CallbackFormProps {
   carId: string
   onSuccess: () => void
+  dealerId: string
 }
 
-export function CallbackForm({ carId, onSuccess }: CallbackFormProps) {
+export function CallbackForm({ carId, onSuccess, dealerId }: CallbackFormProps) {
   // Define form with Zod validation
   const form = useForm<z.infer<typeof callbackFormSchema>>({
     resolver: zodResolver(callbackFormSchema),
@@ -34,7 +35,7 @@ export function CallbackForm({ carId, onSuccess }: CallbackFormProps) {
   // Setup mutation using TanStack Query v5
   const mutation = useMutation({
     mutationFn: (values: z.infer<typeof callbackFormSchema>) => {
-      return requestCallback(values, carId)
+      return requestCallback(values, carId, dealerId)
     },
     onSuccess: (data) => {
       if (data.success) {
