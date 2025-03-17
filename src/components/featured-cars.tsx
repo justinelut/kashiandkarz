@@ -47,7 +47,7 @@ const featuredCars = [
 export function FeaturedCars() {
   return (
     <section className="py-12">
-      <div className="container px-4 md:px-6">
+      <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight">Featured new cars</h2>
           <Link href="#" className="flex items-center text-sm font-medium text-primary">
