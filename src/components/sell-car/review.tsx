@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { saveReviewSubmit } from "@/lib/actions";
+import { useAuth } from "@/lib/appwrite-provider";
 
 interface ReviewSubmitFormProps {
   carId: string;
@@ -46,10 +47,11 @@ const featureFields = [
   { key: "commercial_car_features", label: "Commercial Car Features" },
 ];
 
-export default function ReviewSubmitForm({ carId, carinfo }: ReviewSubmitFormProps) {
+export default function ReviewSubmitForm({ carId, carinfo, business_id }: ReviewSubmitFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const { user } = useAuth();
 
   // Destructure the full car data
   const data = carinfo.data;
@@ -223,7 +225,7 @@ export default function ReviewSubmitForm({ carId, carinfo }: ReviewSubmitFormPro
     try {
     
       const result = await saveReviewSubmit(
-        { status: "published", availability: true},
+        { status: "published", availability: true, user: user.$id, business: business_id },
         carId
       );
       if (result.success) {

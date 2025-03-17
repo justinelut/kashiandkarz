@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { StepIndicator } from "@/components/sell-car/step-indicator";
 import ReviewSubmitForm from "@/components/sell-car/review";
 import { getSingleCarInfo } from "@/lib/actions";
+import { getUser } from "@/lib/appwrite";
+import { getBusinessProfile } from "@/lib/dealer-actions";
 
 export const metadata: Metadata = {
   title: "Sell Your Car - Pricing & Payment",
@@ -22,8 +24,9 @@ export default async function PricingPaymentPage({ searchParams }: PricingPaymen
   
   // Fetch car info using the extracted carId
   const carinfo = await getSingleCarInfo(carId);
-  console.log(JSON.stringify(carinfo));
-
+  const user = await getUser();
+  const businessProfile  = await getBusinessProfile(user?.$id!);
+  
   return (
     <div className="mx-auto container max-w-5xl py-10">
       <div className="mb-8">
@@ -37,12 +40,9 @@ export default async function PricingPaymentPage({ searchParams }: PricingPaymen
 
       <div className="mt-8">
         {/* Pass the resolved carId to your review form */}
-        <ReviewSubmitForm carId={carId} carinfo={carinfo} />
+        <ReviewSubmitForm business_id={businessProfile?.$id as string} carId={carId} carinfo={carinfo} />
       </div>
     </div>
   );
 }
 
-export function ReviewPage() {
-  return <ReviewSubmitForm />;
-}

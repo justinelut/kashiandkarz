@@ -19,6 +19,8 @@ export interface ReviewSubmit {
 	status: "published" | "draft";
 	availability: boolean;
 	slug: string;
+	user: string;
+	business: string
 }
 
 export interface UpdateStatus {

@@ -5,7 +5,7 @@ export const bigDealsCollectionId = process.env.APPWRITE_BIG_DEALS_COLLECTION_ID
 export const carImagesCollectionId = "car_images";
 export const companyCollectionId = "company";
 export const messagesCollectionId = "messages";
-export const callbacksCollectionId = "callbacks";
+export const callbacksCollectionId = "67d15fd400083417092d";
 export const testDrivesCollectionId = "test_drives";
 
 // Collection IDs from the actions file

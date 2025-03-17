@@ -412,6 +412,8 @@ export async function saveReviewSubmit(
 		await database.updateDocument(databaseId, carinfocollectionId, car_id, {
 			status: data.status,
 			availability: data.availability,
+			user: data?.user,
+			business: data?.business,
 		});
 
 		return {

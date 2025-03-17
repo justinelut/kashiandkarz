@@ -1,0 +1,44 @@
+import { z } from "zod"
+
+// Enquiry Form Schema
+export const enquiryFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  email: z.string().email("Please enter a valid email address"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+  contact_preference: z.enum(["email", "phone", "both"], {
+    required_error: "Please select a contact preference",
+  }),
+})
+
+// Callback Form Schema
+export const callbackFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  best_time: z.enum(["morning", "afternoon", "evening"], {
+    required_error: "Please select a preferred time",
+  }),
+  notes: z.string().max(500, "Notes must be less than 500 characters").optional(),
+})
+
+// Test Drive Form Schema
+export const testDriveFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  email: z.string().email("Please enter a valid email address"),
+  preferred_date: z.string().refine(
+    (date) => {
+      const selectedDate = new Date(date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return selectedDate >= today
+    },
+    {
+      message: "Date must be today or in the future",
+    },
+  ),
+  preferred_time: z.string().min(1, "Please select a preferred time"),
+  preferred_location: z.string().min(1, "Please select a preferred location"),
+  special_requests: z.string().max(500, "Special requests must be less than 500 characters").optional(),
+})
+
