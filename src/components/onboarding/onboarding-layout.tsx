@@ -25,14 +25,14 @@ export function OnboardingLayout({ children, currentStep }: OnboardingLayoutProp
   }, [currentStepIndex])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-50 p-4">
+    <div className="flex min-h-screen  flex-col items-center justify-center bg-gradient-to-b p-4">
       <motion.div
-        className="w-full max-w-3xl"
+        className="w-full max-w-xl"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white">
+        <Card className="border-0 rounded-2xl overflow-hidden ">
           <CardContent className="p-0">
             {/* Header & Logo */}
             <div className="text-center space-y-2 p-8 border-b">

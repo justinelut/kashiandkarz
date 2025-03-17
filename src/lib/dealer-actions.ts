@@ -3,11 +3,11 @@
 import { database } from "@/lib/appwrite-config";
 import { ID, Query } from "node-appwrite";
 import type {
-	dealer_contact_info,
-	dealer_inventory_info,
-	dealer_preferences,
+	DealerInventoryInfo,
+	DealerPreferences,
 	dealer_profile,
 	DealerBasicInfo,
+	DealerContactInfo,
 } from "@/types/dealer";
 import {
 	businesscollectionid,
@@ -62,27 +62,20 @@ export async function saveDealerBasicInfo(
 }
 
 // Save contact info
-export async function save_dealer_contact_info(
-	user_id: string,
-	data: dealer_contact_info,
-): Promise<dealer_contact_info> {
+export async function saveDealerContactInfo(
+	business_id: string,
+	data: DealerContactInfo,
+): Promise<DealerContactInfo> {
 	try {
-		const existing_profile = await get_dealer_profile(user_id);
-
-		if (!existing_profile) {
-			throw new Error("Please complete the basic information first");
-		}
-
 		const response = await database.updateDocument(
 			database_id,
-			dealer_collection_id,
-			existing_profile.$id,
+			businesscollectionid,
+			business_id,
 			{
 				...data,
-				updated_at: new Date().toISOString(),
 			},
 		);
-		return response as unknown as dealer_contact_info;
+		return response as unknown as DealerContactInfo;
 	} catch (error) {
 		console.error("Error saving dealer contact info:", error);
 		throw new Error("Failed to save dealer contact info");
@@ -90,27 +83,20 @@ export async function save_dealer_contact_info(
 }
 
 // Save inventory info
-export async function save_dealer_inventory_info(
-	user_id: string,
-	data: dealer_inventory_info,
-): Promise<dealer_inventory_info> {
+export async function SaveDealerInventoryInfo(
+	business_id: string,
+	data: DealerInventoryInfo,
+): Promise<DealerInventoryInfo> {
 	try {
-		const existing_profile = await get_dealer_profile(user_id);
-
-		if (!existing_profile) {
-			throw new Error("Please complete the previous steps first");
-		}
-
 		const response = await database.updateDocument(
-			database_id,
-			dealer_collection_id,
-			existing_profile.$id,
+			databaseId,
+			businesscollectionid,
+			business_id,
 			{
 				...data,
-				updated_at: new Date().toISOString(),
 			},
 		);
-		return response as unknown as dealer_inventory_info;
+		return response as unknown as DealerInventoryInfo;
 	} catch (error) {
 		console.error("Error saving dealer inventory info:", error);
 		throw new Error("Failed to save dealer inventory info");
@@ -118,28 +104,22 @@ export async function save_dealer_inventory_info(
 }
 
 // Save preferences and complete onboarding
-export async function save_dealer_preferences(
-	user_id: string,
-	data: dealer_preferences,
-): Promise<dealer_preferences> {
+export async function SaveDealerPreferences(
+	business_id: string,
+	data: DealerPreferences,
+): Promise<DealerPreferences> {
 	try {
-		const existing_profile = await get_dealer_profile(user_id);
-
-		if (!existing_profile) {
-			throw new Error("Please complete the previous steps first");
-		}
-
+	
 		const response = await database.updateDocument(
-			database_id,
-			dealer_collection_id,
-			existing_profile.$id,
+			databaseId,
+			businesscollectionid,
+			business_id,
 			{
 				...data,
 				onboarding_completed: true,
-				updated_at: new Date().toISOString(),
 			},
 		);
-		return response as unknown as dealer_preferences;
+		return response as unknown as DealerPreferences;
 	} catch (error) {
 		console.error("Error saving dealer preferences:", error);
 		throw new Error("Failed to save dealer preferences");
@@ -176,11 +156,11 @@ export async function checkBusinessProfile() {
 		user?.status !== "approved" &&
 		businessProfile?.onboarding_completed !== true
 	) {
-		return { account: false, business: false };
+		return { account: false, business: false, businessProfile };
 	} else if (user?.status !== "approved") {
-		return { account: false, business: !!businessProfile };
+		return { account: false, business: !!businessProfile, businessProfile };
 	} else if (businessProfile?.onboarding_completed !== true) {
-		return { account: !!user, business: false };
+		return { account: !!user, business: false, businessProfile };
 	}
-	return { account: !!user, business: !!businessProfile };
+	return { account: !!user, business: !!businessProfile, businessProfile };
 }

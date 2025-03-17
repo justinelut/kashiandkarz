@@ -1,15 +1,7 @@
-"use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
-export default function OnboardingPage() {
-	const router = useRouter();
-
-	useEffect(() => {
-		// Redirect to the first step
-		router.push("/onboarding/business-info");
-	}, [router]);
+export default async function OnboardingPage() {
+	
 
 	return (
 		<div className="flex items-center justify-center min-h-screen">

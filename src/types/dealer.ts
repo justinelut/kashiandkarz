@@ -6,7 +6,7 @@ export interface DealerBasicInfo {
     $id?: string
   }
   
-  export interface dealer_contact_info {
+  export interface DealerContactInfo {
     contact_name: string
     email: string
     phone: string
@@ -14,13 +14,13 @@ export interface DealerBasicInfo {
     $id?: string
   }
   
-  export interface dealer_inventory_info {
+  export interface DealerInventoryInfo {
     car_makes: string[]
     vehicle_types: string[]
     $id?: string
   }
   
-  export interface dealer_preferences {
+  export interface DealerPreferences {
     primary_service: "sales" | "service" | "parts" | "financing" | "leasing"
     description: string
     accept_terms: boolean
@@ -29,10 +29,10 @@ export interface DealerBasicInfo {
   }
   
   export interface dealer_profile
-    extends dealer_basic_info,
-      dealer_contact_info,
-      dealer_inventory_info,
-      dealer_preferences {
+    extends DealerBasicInfo,
+      DealerContactInfo,
+      DealerInventoryInfo,
+      DealerPreferences {
     user_id: string
     created_at: string
     updated_at: string

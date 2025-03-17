@@ -45,13 +45,15 @@ export default function BusinessInfoPage() {
 	});
 
 	const mutation = useMutation({
-		mutationFn: (data: DealerBasicInfo) =>
-			saveDealerBasicInfo(user?.$id!, { ...data, step: 1 }),
-		onSuccess: () => {
+		mutationFn: async (data: DealerBasicInfo) => {
+			const results = await saveDealerBasicInfo(user?.$id!, { ...data, step: 1 });
+			return results;
+		},
+		onSuccess: (data) => {
 			toast("Business information saved", {
 				description: "Let's continue with your contact details",
 			});
-			router.push("/onboarding/contact-details");
+			router.push(`/onboarding/contact-details?business_id=${data.$id}`);
 		},
 		onError: (error) => {
 			toast("Something went wrong", {
