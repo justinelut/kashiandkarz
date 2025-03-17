@@ -11,9 +11,9 @@ export const reviewSchema = z.object({
   pros: z.array(z.string()).optional(),
   cons: z.array(z.string()).optional(),
   recommend: z.boolean(),
-  ownershipDuration: z.enum(["less-than-month", "1-6-months", "6-12-months", "1-3-years", "3-plus-years"]),
-  purchaseType: z.enum(["new", "used", "leased", "rented", "test-drive"]),
-  verifiedPurchase: z.boolean(),
+  ownership_duration: z.enum(["less-than-month", "1-6-months", "6-12-months", "1-3-years", "3-plus-years"]),
+  purchase_type: z.enum(["new", "used", "leased", "rented", "test-drive"]),
+  verified_purchase: z.boolean(),
 })
 
 // Type for review form data

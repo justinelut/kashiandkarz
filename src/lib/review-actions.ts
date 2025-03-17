@@ -3,6 +3,7 @@
 import { Databases, Client, Query, ID } from "node-appwrite"
 import { revalidatePath } from "next/cache"
 import { reviewSchema, type ReviewFormData, type Review, type ReviewStats } from "@/types/review"
+import { reviewsCollectionId } from "./constants"
 
 // Initialize Appwrite client
 const client = new Client()
@@ -14,11 +15,12 @@ const database = new Databases(client)
 const databaseId = process.env.APPWRITE_DATABASE_ID as string
 
 // Collection IDs
-const reviewsCollectionId = "67d2e79d003b3d7bf86d" // This would be the actual collection ID in your Appwrite database
+ // This would be the actual collection ID in your Appwrite database
 const usersCollectionId = "67d16058002af6428ea6" // This would be the actual users collection ID
 
 // Submit a new review
 export async function submitReview(data: ReviewFormData, carId: string, userId: string, dealer: string, businessId: string) {
+  console.log(data)
   try {
     // Validate the review data
     const validatedData = reviewSchema.parse(data)
@@ -41,7 +43,7 @@ export async function submitReview(data: ReviewFormData, carId: string, userId: 
     return { success: true, data: review }
   } catch (error) {
     console.error("Error submitting review:", error)
-    return { success: false, error: "Failed to submit review" }
+    // return { success: false, error: "Failed to submit review" }
   }
 }
 

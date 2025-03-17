@@ -29,7 +29,7 @@ export default async function WriteReviewPage({ params }: { params: { slug: stri
 
   return (
     <div className="container py-8 mx-auto max-w-5xl pt-20">
-      <ReviewForm dealer={car?.user?.$id as string} businessId={car?.business?.$id as string} carId={car?.$id as string} userId={user?.$id} carName={carName.trim()} />
+      <ReviewForm slug={car?.slug as string} dealer={car?.user?.$id as string} businessId={car?.business?.$id as string} carId={car?.$id as string} userId={user?.$id} carName={carName.trim()} />
     </div>
   )
 }
