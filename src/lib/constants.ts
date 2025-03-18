@@ -8,6 +8,7 @@ export const messagesCollectionId = "67d15fc7003e6140fb31";
 export const callbacksCollectionId = "67d15fd400083417092d";
 export const testDrivesCollectionId = "67d15fbb00268b54fd35";
 export const reviewsCollectionId = "67d2e79d003b3d7bf86d"
+export const testimonialsCollectionId = "67d92d8a000340693e27"
 // Collection IDs from the actions file
 
 export const exteriorFeatureCollectionId = "exteriorfeatures";
