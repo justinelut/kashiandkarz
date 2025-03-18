@@ -9,7 +9,7 @@ import { database } from "./appwrite-config"
 // Get all testimonials
 export const getTestimonials = async (limit = 5) => {
   try {
-    const queries = [Query.equal("status", "published"), Query.limit(limit), Query.orderDesc("created_at")]
+    const queries = [Query.equal("status", "published"), Query.limit(limit), Query.orderDesc("$createdAt")]
 
     const response = await database.listDocuments(databaseId, testimonialsCollectionId, queries)
 

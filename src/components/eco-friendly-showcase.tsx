@@ -18,6 +18,10 @@ interface EcoFriendlyShowcaseProps {
 }
 
 export function EcoFriendlyShowcase({ cars = [] }: EcoFriendlyShowcaseProps) {
+
+  console.log("mother fucker")
+  console.log(cars)
+ 
   const [selectedType, setSelectedType] = useState<string>("all")
 
   // Determine vehicle type based on data
@@ -53,7 +57,7 @@ export function EcoFriendlyShowcase({ cars = [] }: EcoFriendlyShowcaseProps) {
   }
 
   // Filter cars based on selected type
-  const filteredCars = selectedType === "all" ? cars : cars.filter((car) => getVehicleType(car) === selectedType)
+  const filteredCars = selectedType === "all" ? cars : cars?.car_info?.filter((car) => getVehicleType(car) === selectedType)
 
   // Format currency
   const formatCurrency = (amount: number, car?: any) => {

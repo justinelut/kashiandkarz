@@ -4,28 +4,36 @@ import { Star } from "lucide-react"
 
 const footerLinks = {
   carInfo: [
-    { title: "Car news and advice", href: "#" },
-    { title: "Car reviews", href: "#" },
-    { title: "Compare cars", href: "#" },
-    { title: "Find a car", href: "#" },
-    { title: "New cars", href: "#" },
-    { title: "Used cars", href: "#" },
-    { title: "Car financing", href: "#" },
-    { title: "Sell my car", href: "#" },
+    { title: "Car news and advice", href: "/car-news-advice" },
+    { title: "Car reviews", href: "/car-reviews" },
+    { title: "Compare cars", href: "/compare-cars" },
+    { title: "Find a car", href: "/find-a-car" },
+    { title: "New car deals", href: "/new-cars" },
+    { title: "Nearly new cars", href: "/used-cars?condition=nearly-new" },
+    { title: "Used cars", href: "/used-cars" },
+    { title: "Car leasing", href: "/car-leasing" },
+    { title: "Sell my car", href: "/sell-my-car" },
+    { title: "KashiAndKarz Leasing", href: "/leasing" },
   ],
   company: [
-    { title: "About us", href: "#" },
-    { title: "Contact us", href: "#" },
-    { title: "Our team", href: "#" },
-    { title: "Careers", href: "#" },
-    { title: "Dealership partners", href: "#" },
-    { title: "Refer a friend", href: "#" },
+    { title: "About us", href: "/about-us" },
+    { title: "Contact us", href: "/contact-us" },
+    { title: "Leadership team", href: "/leadership-team" },
+    { title: "Authors and experts", href: "/authors-experts" },
+    { title: "How we test cars", href: "/how-we-test-cars" },
+    { title: "KashiAndKarz newsroom", href: "/newsroom" },
+    { title: "Careers", href: "/careers" },
+    { title: "Dealer & brand partners", href: "/partners" },
+    { title: "Refer a friend", href: "/refer-a-friend" },
   ],
   legal: [
-    { title: "Terms & conditions", href: "#" },
-    { title: "Privacy policy", href: "#" },
-    { title: "Cookie policy", href: "#" },
-    { title: "Sitemap", href: "#" },
+    { title: "Terms & conditions", href: "/terms-conditions" },
+    { title: "Manage cookies & privacy", href: "/cookies" },
+    { title: "Fraud disclaimer", href: "/fraud-disclaimer" },
+    { title: "ESG Policy", href: "/esg-policy" },
+    { title: "Privacy policy", href: "/privacy-policy" },
+    { title: "Modern slavery statement", href: "/modern-slavery-statement" },
+    { title: "Sitemap", href: "/sitemap" },
   ],
 }
 
@@ -40,7 +48,7 @@ const socialLinks = [
 export function Footer() {
   return (
     <footer className="bg-[#1C1C1C] text-white">
-      <div className="container px-4 py-12 md:px-6">
+      <div className="container px-4 py-12 md:px-6 mx-auto max-w-7xl">
         <div className="grid gap-12 md:grid-cols-4">
           <div>
             <h3 className="mb-6 text-lg font-bold">Contact Us</h3>

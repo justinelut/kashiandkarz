@@ -13,32 +13,18 @@ export const getEcoFriendlyVehicles = async (limit = 4) => {
     // First approach: Filter by category
     const queries = [
       Query.equal("status", "published"),
+      Query.equal("ecofriendly", true),
       Query.equal("availability", true),
       Query.limit(limit),
       Query.orderDesc("$createdAt"),
     ]
 
-    // We can use either category field or car_type relationship
-    // Option 1: Using category field if it contains eco-friendly values
-    const categoryQueries = [...queries, Query.equal("category", "eco-friendly")]
+    
 
-    // Option 2: Using car_type relationship with specific slugs
-    // This would require a more complex query or multiple queries
-
-    const response = await database.listDocuments(databaseId, carinfocollectionId, categoryQueries)
+    const response = await database.listDocuments(databaseId, carinfocollectionId, queries)
 
     // If no results with category, try alternative approach with car features
-    if (response.documents.length === 0) {
-      // Alternative: Look for cars with eco-friendly features
-      const ecoFeaturesQueries = [...queries, Query.isNotNull("car_features.ecofriendly_features")]
-
-      const ecoFeaturesResponse = await database.listDocuments(databaseId, carinfocollectionId, ecoFeaturesQueries)
-
-      return {
-        success: true,
-        data: ecoFeaturesResponse.documents,
-      }
-    }
+   
 
     return {
       success: true,

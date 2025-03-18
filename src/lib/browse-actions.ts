@@ -467,12 +467,13 @@ export const getCertifiedPreOwnedCars = async (limit = 6) => {
 }
 
 // Get popular used car makes
-export const getPopularUsedCarMakes = async (limit = 8) => {
+export const getPopularUsedCarMakes = async (limit = 10) => {
   try {
     // This would ideally be based on analytics data
     // For now, we'll just get makes that have used cars
     const queries = [
       Query.limit(limit),
+      Query.equal("popular", true)
       // Add any other criteria for popular makes
     ]
 
@@ -486,12 +487,13 @@ export const getPopularUsedCarMakes = async (limit = 8) => {
 }
 
 // Get popular new car makes
-export const getPopularNewCarMakes = async (limit = 8) => {
+export const getPopularNewCarMakes = async (limit = 10) => {
   try {
     // This would ideally be based on analytics data
     // For now, we'll just get makes that have new cars
     const queries = [
       Query.limit(limit),
+      Query.equal("popular", true)
       // Add any other criteria for popular makes
     ]
 

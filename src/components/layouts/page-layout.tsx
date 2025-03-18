@@ -15,7 +15,7 @@ interface PageLayoutProps {
 
 export function PageLayout({ title, description, children, breadcrumbs = [], lastUpdated }: PageLayoutProps) {
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen mx-auto max-w-5xl py-20 container">
       {/* Breadcrumbs */}
       {breadcrumbs.length > 0 && (
         <div className="border-b">
