@@ -9,7 +9,7 @@ import { carinfocollectionId, databaseId } from "./constants"
 export const getFeaturedNewCars = async (limit = 8) => {
   try {
     const queries = [
-      Query.equal("condition", "new"),
+    //   Query.equal("condition", "new"),
       Query.equal("featured", true),
       Query.equal("status", "published"),
       Query.equal("availability", true),
