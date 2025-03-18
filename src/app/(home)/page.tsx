@@ -19,22 +19,23 @@ import {
 import { FamilyCarsShowcase } from "@/components/family-cars-showcase";
 import { EcoFriendlyShowcase } from "@/components/eco-friendly-showcase";
 import { Newsletter } from "@/components/newsletter";
+import { getEcoFriendlyVehicles } from "@/lib/eco-friendly-action";
 
 export default async function Home() {
 	const allcarfeatures = await getCarFeatures();
 	const bigDealsResponse = await getBigDeals();
 	const bigDeals = bigDealsResponse.success ? bigDealsResponse.data : [];
 	const featuredBigDeal = bigDeals.length > 0 ? bigDeals[0] : null;
-	const ecoFriendlyCarsResponse = await getEcoFriendlyCars();
+	// const ecoFriendlyCarsResponse = await getEcoFriendlyCars();
 	const familyCarsResponse = await getFamilyCars();
 	const commercialVehiclesResponse = await getCommercialVehicles();
 	const performanceSportsCarsResponse = await getPerformanceSportsCars();
 	const budgetFriendlyFindsResponse = await getBudgetFriendlyFinds();
 	const vintageClassicCollectionResponse = await getVintageClassicCollection();
 
-	const ecoFriendlyCars = ecoFriendlyCarsResponse.success
-		? ecoFriendlyCarsResponse.data
-		: [];
+	// const ecoFriendlyCars = ecoFriendlyCarsResponse.success
+	// 	? ecoFriendlyCarsResponse.data
+	// 	: [];
 	const familyCars = familyCarsResponse.success ? familyCarsResponse.data : [];
 	const commercialVehicles = commercialVehiclesResponse.success
 		? commercialVehiclesResponse.data
@@ -48,6 +49,9 @@ export default async function Home() {
 	const vintageClassicCollection = vintageClassicCollectionResponse.success
 		? vintageClassicCollectionResponse.data
 		: [];
+
+		const ecoFriendlyResponse = await getEcoFriendlyVehicles(4)
+		const ecoFriendlyCars = ecoFriendlyResponse.success ? ecoFriendlyResponse.data : []
 
 	return (
 		<div>
@@ -67,7 +71,8 @@ export default async function Home() {
 				<PerformanceSportsCars cars={performanceSportsCars} />
 				<FamilyCarsShowcase />
 				
-        <EcoFriendlyShowcase />
+      
+		<EcoFriendlyShowcase cars={ecoFriendlyCars} />
         {/* <BudgetFriendlyFinds />
         <CommercialVehiclesHub />
         <VintageClassicCollection />
