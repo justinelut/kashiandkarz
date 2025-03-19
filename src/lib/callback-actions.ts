@@ -1,9 +1,10 @@
 "use server"
 
 import { ID, Query } from "appwrite"
-import { databases } from "./appwrite-config"
+
 import { type CallbackRequest, callbackRequestSchema } from "@/types/dashboard"
 import { revalidatePath } from "next/cache"
+import { database } from "./appwrite-config"
 
 const DATABASE_ID = process.env.APPWRITE_DATABASE_ID!
 const CALLBACK_COLLECTION_ID = "67d15fd400083417092d" // Replace with your actual collection ID
@@ -20,7 +21,7 @@ export async function getCallbackRequests(status?: string, page = 1, limit = 10)
     queries.push(Query.limit(limit))
     queries.push(Query.offset((page - 1) * limit))
 
-    const response = await databases.listDocuments(DATABASE_ID, CALLBACK_COLLECTION_ID, queries)
+    const response = await database.listDocuments(DATABASE_ID, CALLBACK_COLLECTION_ID, queries)
 
     return {
       callbacks: response.documents as unknown as CallbackRequest[],
@@ -34,7 +35,7 @@ export async function getCallbackRequests(status?: string, page = 1, limit = 10)
 
 export async function getCallbackRequestById(id: string) {
   try {
-    const response = await databases.getDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, id)
+    const response = await database.getDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, id)
 
     return response as unknown as CallbackRequest
   } catch (error) {
@@ -47,7 +48,7 @@ export async function createCallbackRequest(data: Omit<CallbackRequest, "id">) {
   try {
     const validatedData = callbackRequestSchema.omit({ id: true }).parse(data)
 
-    const response = await databases.createDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, ID.unique(), {
+    const response = await database.createDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, ID.unique(), {
       ...validatedData,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -65,7 +66,7 @@ export async function updateCallbackRequest(id: string, data: Partial<CallbackRe
   try {
     const validatedData = callbackRequestSchema.partial().parse(data)
 
-    const response = await databases.updateDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, id, {
+    const response = await database.updateDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, id, {
       ...validatedData,
       updatedAt: new Date(),
     })
@@ -81,7 +82,7 @@ export async function updateCallbackRequest(id: string, data: Partial<CallbackRe
 
 export async function deleteCallbackRequest(id: string) {
   try {
-    await databases.deleteDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, id)
+    await database.deleteDocument(DATABASE_ID, CALLBACK_COLLECTION_ID, id)
 
     revalidatePath("/dashboard/callbacks")
     return { success: true }

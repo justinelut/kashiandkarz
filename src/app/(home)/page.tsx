@@ -88,8 +88,8 @@ export default async function Home() {
 		? featuredCarsResponse.data
 		: [];
 
-// 		const budgetFriendlyResponse = await getBudgetFriendlyVehicles(6)
-//   const budgetFriendlyCars = budgetFriendlyResponse.success ? budgetFriendlyResponse.data : []
+	// 		const budgetFriendlyResponse = await getBudgetFriendlyVehicles(6)
+	//   const budgetFriendlyCars = budgetFriendlyResponse.success ? budgetFriendlyResponse.data : []
 
 	return (
 		<div>
@@ -110,7 +110,7 @@ export default async function Home() {
 				{/* <BudgetFriendlyFinds cars={budgetFriendlyCars} /> */}
 				<CommercialVehiclesHub vehicles={commercialVehicles} />
 				<PopularBrands brands={popularMakes} />
-				
+
 				<FeaturedCars cars={featuredCars} />
 				<Newsletter />
 				<FeaturedCars />

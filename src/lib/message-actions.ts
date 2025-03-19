@@ -1,9 +1,9 @@
 "use server"
 
 import { ID, Query } from "appwrite"
-import { databases } from "./appwrite-config"
 import { type Message, messageSchema } from "@/types/dashboard"
 import { revalidatePath } from "next/cache"
+import { database } from "./appwrite-config"
 
 const DATABASE_ID = process.env.APPWRITE_DATABASE_ID!
 const MESSAGE_COLLECTION_ID = "67d15fc7003e6140fb31" // Replace with your actual collection ID
@@ -24,7 +24,7 @@ export async function getMessages(isRead?: boolean, isReplied?: boolean, page = 
     queries.push(Query.limit(limit))
     queries.push(Query.offset((page - 1) * limit))
 
-    const response = await databases.listDocuments(DATABASE_ID, MESSAGE_COLLECTION_ID, queries)
+    const response = await database.listDocuments(DATABASE_ID, MESSAGE_COLLECTION_ID, queries)
 
     return {
       messages: response.documents as unknown as Message[],
@@ -38,7 +38,7 @@ export async function getMessages(isRead?: boolean, isReplied?: boolean, page = 
 
 export async function getMessageById(id: string) {
   try {
-    const response = await databases.getDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id)
+    const response = await database.getDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id)
 
     return response as unknown as Message
   } catch (error) {
@@ -51,7 +51,7 @@ export async function createMessage(data: Omit<Message, "id">) {
   try {
     const validatedData = messageSchema.omit({ id: true }).parse(data)
 
-    const response = await databases.createDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, ID.unique(), {
+    const response = await database.createDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, ID.unique(), {
       ...validatedData,
       isRead: false,
       isReplied: false,
@@ -71,7 +71,7 @@ export async function updateMessage(id: string, data: Partial<Message>) {
   try {
     const validatedData = messageSchema.partial().parse(data)
 
-    const response = await databases.updateDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id, {
+    const response = await database.updateDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id, {
       ...validatedData,
       updatedAt: new Date(),
     })
@@ -87,7 +87,7 @@ export async function updateMessage(id: string, data: Partial<Message>) {
 
 export async function markMessageAsRead(id: string) {
   try {
-    const response = await databases.updateDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id, {
+    const response = await database.updateDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id, {
       isRead: true,
       updatedAt: new Date(),
     })
@@ -103,7 +103,7 @@ export async function markMessageAsRead(id: string) {
 
 export async function markMessageAsReplied(id: string) {
   try {
-    const response = await databases.updateDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id, {
+    const response = await database.updateDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id, {
       isReplied: true,
       updatedAt: new Date(),
     })
@@ -119,7 +119,7 @@ export async function markMessageAsReplied(id: string) {
 
 export async function deleteMessage(id: string) {
   try {
-    await databases.deleteDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id)
+    await database.deleteDocument(DATABASE_ID, MESSAGE_COLLECTION_ID, id)
 
     revalidatePath("/dashboard/messages")
     return { success: true }

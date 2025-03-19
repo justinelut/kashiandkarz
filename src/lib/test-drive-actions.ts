@@ -1,7 +1,7 @@
 "use server"
 
 import { ID, Query } from "appwrite"
-import { databases } from "./appwrite-config"
+import { database } from "./appwrite-config"
 import { type TestDrive, testDriveSchema } from "@/types/dashboard"
 import { revalidatePath } from "next/cache"
 
@@ -17,22 +17,30 @@ export async function getTestDrives(status?: string, startDate?: string, endDate
     }
 
     if (startDate) {
-      queries.push(Query.greaterThanEqual("scheduledDate", startDate))
+      queries.push(Query.greaterThanEqual("preferred_date", startDate))
     }
 
     if (endDate) {
-      queries.push(Query.lessThanEqual("scheduledDate", endDate))
+      queries.push(Query.lessThanEqual("preferred_date", endDate))
     }
 
-    queries.push(Query.orderAsc("scheduledDate"))
-    queries.push(Query.orderAsc("scheduledTime"))
+    queries.push(Query.orderAsc("preferred_date"))
+    queries.push(Query.orderAsc("preferred_time"))
     queries.push(Query.limit(limit))
     queries.push(Query.offset((page - 1) * limit))
 
-    const response = await databases.listDocuments(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, queries)
+    const response = await database.listDocuments(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, queries)
+
+    // Map the response to match the expected structure in the UI
+    const testDrives = response.documents.map((doc: any) => ({
+      ...doc,
+      // Keep the original fields but also add the fields the UI is expecting
+      scheduledDate: doc.preferred_date,
+      scheduledTime: doc.preferred_time,
+    }))
 
     return {
-      testDrives: response.documents as unknown as TestDrive[],
+      testDrives: testDrives as unknown as TestDrive[],
       total: response.total,
     }
   } catch (error) {
@@ -43,9 +51,16 @@ export async function getTestDrives(status?: string, startDate?: string, endDate
 
 export async function getTestDriveById(id: string) {
   try {
-    const response = await databases.getDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, id)
+    const response = await database.getDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, id)
+    
+    // Map the document to include the fields expected by the UI
+    const testDrive = {
+      ...response,
+      scheduledDate: response.preferred_date,
+      scheduledTime: response.preferred_time,
+    }
 
-    return response as unknown as TestDrive
+    return testDrive as unknown as TestDrive
   } catch (error) {
     console.error("Error fetching test drive:", error)
     throw new Error("Failed to fetch test drive")
@@ -54,9 +69,18 @@ export async function getTestDriveById(id: string) {
 
 export async function createTestDrive(data: Omit<TestDrive, "id">) {
   try {
-    const validatedData = testDriveSchema.omit({ id: true }).parse(data)
+    // Extract the fields and map them to match the database structure
+    const { scheduledDate, scheduledTime, ...restData } = data
+    
+    const dbData = {
+      ...restData,
+      preferred_date: scheduledDate,
+      preferred_time: scheduledTime,
+    }
+    
+    const validatedData = testDriveSchema.omit({ id: true }).parse(dbData)
 
-    const response = await databases.createDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, ID.unique(), {
+    const response = await database.createDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, ID.unique(), {
       ...validatedData,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -72,9 +96,18 @@ export async function createTestDrive(data: Omit<TestDrive, "id">) {
 
 export async function updateTestDrive(id: string, data: Partial<TestDrive>) {
   try {
-    const validatedData = testDriveSchema.partial().parse(data)
+    // Extract the fields and map them to match the database structure
+    const { scheduledDate, scheduledTime, ...restData } = data
+    
+    const dbData = {
+      ...restData,
+      ...(scheduledDate && { preferred_date: scheduledDate }),
+      ...(scheduledTime && { preferred_time: scheduledTime }),
+    }
+    
+    const validatedData = testDriveSchema.partial().parse(dbData)
 
-    const response = await databases.updateDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, id, {
+    const response = await database.updateDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, id, {
       ...validatedData,
       updatedAt: new Date(),
     })
@@ -90,7 +123,7 @@ export async function updateTestDrive(id: string, data: Partial<TestDrive>) {
 
 export async function deleteTestDrive(id: string) {
   try {
-    await databases.deleteDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, id)
+    await database.deleteDocument(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, id)
 
     revalidatePath("/dashboard/test-drives")
     return { success: true }
@@ -103,8 +136,8 @@ export async function deleteTestDrive(id: string) {
 export async function getAvailableTimeSlots(date: string, carId: string) {
   try {
     // Get all test drives for the specified date and car
-    const existingBookings = await databases.listDocuments(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, [
-      Query.equal("scheduledDate", date),
+    const existingBookings = await database.listDocuments(DATABASE_ID, TEST_DRIVE_COLLECTION_ID, [
+      Query.equal("preferred_date", date),
       Query.equal("carId", carId),
       Query.notEqual("status", "cancelled"),
     ])
@@ -113,7 +146,7 @@ export async function getAvailableTimeSlots(date: string, carId: string) {
     const businessHours = Array.from({ length: 10 }, (_, i) => `${i + 9}:00`)
 
     // Filter out already booked time slots
-    const bookedTimes = (existingBookings.documents as unknown as TestDrive[]).map((booking) => booking.scheduledTime)
+    const bookedTimes = (existingBookings.documents as unknown as TestDrive[]).map((booking) => booking.preferred_time)
 
     const availableTimeSlots = businessHours.filter((time) => !bookedTimes.includes(time))
 
@@ -123,4 +156,3 @@ export async function getAvailableTimeSlots(date: string, carId: string) {
     throw new Error("Failed to fetch available time slots")
   }
 }
-
