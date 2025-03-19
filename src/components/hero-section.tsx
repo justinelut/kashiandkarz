@@ -140,8 +140,8 @@ export function HeroSection({ bigDeal }: HeroSectionProps) {
       </div>
 
       {/* Floating Search Panel */}
-      <div className="bg-blue-500 relative bottom-0 left-1/2 w-full max-w-5xl -translate-x-1/2 translate-y-1/2 transform p-6 md:px-6">
-        <div className="rounded-xl bg-white p-2 shadow-2xl transition-all duration-300 ease-in-out md:p-4">
+      <div className="relative bottom-0 left-1/2 w-full max-w-5xl -translate-x-1/2 translate-y-1/2 transform p-6 md:px-6">
+        <div className="rounded-xl bg-white p-2 shadow-md transition-all duration-300 ease-in-out md:p-4">
           <div className="flex flex-col gap-2 md:gap-4">
             <div className="relative flex flex-col items-center gap-2 md:flex-row md:gap-4">
               <div className="group relative w-full">
