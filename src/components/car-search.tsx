@@ -17,7 +17,7 @@ export function CarSearch() {
   }
 
   return (
-    <section className="bg-white py-8 -mt-10 z-20">
+    <section className="bg-white py-8 mt-10 z-20">
       <div className="container px-4 md:px-6 mx-auto">
         <div className="mx-auto max-w-3xl rounded-xl bg-white p-4 shadow-lg md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row">

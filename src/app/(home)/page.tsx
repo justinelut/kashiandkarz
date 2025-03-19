@@ -95,7 +95,7 @@ export default async function Home() {
 		<div>
 			<main className="flex-1 pt-20">
 				<HeroSection bigDeal={featuredBigDeal} />
-				<CarSearch />
+				{/* <CarSearch/> */}
 				<div className="container mx-auto py-10">
 					<BrowseSection />
 					<HowItWorks />

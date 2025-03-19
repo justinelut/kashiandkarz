@@ -737,7 +737,7 @@ export default function SearchPage() {
 		<div className="min-h-screen bg-gray-100">
 			<div className="container mx-auto px-4 py-8">
 				{/* Search input */}
-				<div className="mb-6 relative">
+				{/* <div className="mb-6 relative">
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
@@ -747,7 +747,7 @@ export default function SearchPage() {
 							onChange={handleSearchChange}
 						/>
 					</div>
-				</div>
+				</div> */}
 
 				<div className="mb-6 flex items-center justify-between">
 					<div className="flex items-center gap-3">
