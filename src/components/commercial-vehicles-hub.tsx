@@ -95,7 +95,7 @@ export function CommercialVehiclesHub({ vehicles = [] }: CommercialVehiclesHubPr
                   <TabsTrigger
                     key={type.value}
                     value={type.value}
-                    className="justify-start data-[state=active]:bg-slate-700 data-[state=active]:text-white py-3"
+                    className="justify-start data-[state=active]:bg-[#1c1c1c] data-[state=active]:text-white py-3"
                   >
                     {type.name}
                   </TabsTrigger>
