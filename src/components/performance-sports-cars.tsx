@@ -95,17 +95,17 @@ export function PerformanceSportsCars() {
             </div>
 
             <Tabs defaultValue="all" value={selectedCategory} onValueChange={setSelectedCategory}>
-              <TabsList className="bg-red-900/50">
+              <TabsList className="bg-orange-500">
                 <TabsTrigger value="all" className="data-[state=active]:bg-red-600 data-[state=active]:text-white">
                   All
                 </TabsTrigger>
                 <TabsTrigger
                   value="Sports Car"
-                  className="data-[state=active]:bg-red-600 data-[state=active]:text-white"
+                  className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
                 >
                   Sports Cars
                 </TabsTrigger>
-                <TabsTrigger value="Supercar" className="data-[state=active]:bg-red-600 data-[state=active]:text-white">
+                <TabsTrigger value="Supercar" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
                   Supercars
                 </TabsTrigger>
               </TabsList>
