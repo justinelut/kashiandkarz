@@ -25,7 +25,7 @@ export function DealerInfo({ name, company, isOnline, distance, reviews, avatar 
       </div>
       <div className="flex flex-col items-end gap-2">
         {isOnline && (
-          <Badge variant="secondary" className="bg-[#00e1e1]/10 text-[#00e1e1]">
+          <Badge variant="secondary" className="bg-[#00e1e1]/10 text-green-500">
             Online now
           </Badge>
         )}

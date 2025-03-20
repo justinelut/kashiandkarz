@@ -58,7 +58,7 @@ export function ActionButtons({
           }}
         >
           <DialogTrigger asChild>
-            <Button className="w-full bg-[#00e1e1] text-black hover:bg-[#00e1e1]/90 font-medium">
+            <Button className="w-full bg-primary/70 text-primary-foreground hover:bg-primary/90 hover:text-gray-200 font-medium">
               <MessageSquare className="mr-2 h-4 w-4" />
               Enquire now
             </Button>
@@ -135,7 +135,7 @@ export function ActionButtons({
         {/* Call Now Button */}
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="w-full bg-[#00e1e1] text-black hover:bg-[#00e1e1]/90 font-medium">
+            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/60 font-medium">
               <Phone className="mr-2 h-4 w-4" />
               Call now
             </Button>

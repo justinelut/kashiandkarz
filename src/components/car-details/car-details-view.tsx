@@ -204,7 +204,7 @@ export async function CarDetailsView({ car }: { car: any }) {
 
 						{/* Quick Overview Card */}
 						<Card className="overflow-hidden border-none shadow-sm">
-							<div className="bg-gradient-to-r from-[#00e1e1]/10 to-[#00e1e1]/5 px-6 py-3">
+							<div className="bg-gradient-to-r from-primary/20 to-primary/90 px-6 py-3">
 								<h2 className="text-lg font-semibold">Quick Overview</h2>
 							</div>
 							<CardContent className="grid gap-6 p-6 sm:grid-cols-2 md:grid-cols-3">
@@ -355,7 +355,7 @@ export async function CarDetailsView({ car }: { car: any }) {
 						<div className="space-y-8 sticky top-4">
 							{/* Price Card */}
 							<Card className="overflow-hidden border-none shadow-sm">
-								<div className="bg-gradient-to-r from-[#00e1e1]/10 to-[#00e1e1]/5 px-6 py-3">
+								<div className="bg-gradient-to-r from-primary/10 to-primary/50 px-6 py-3">
 									<h2 className="text-lg font-semibold">Price</h2>
 								</div>
 								<CardContent className="p-6">
