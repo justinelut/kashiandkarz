@@ -170,9 +170,8 @@ export function LuxuryCollection() {
                   <button
                     key={car.$id}
                     onClick={() => setActiveIndex(index)}
-                    className={`relative flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden snap-start ${
-                      index === activeIndex ? "ring-2 ring-primary" : "opacity-70"
-                    }`}
+                    className={`relative flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden snap-start ${index === activeIndex ? "ring-2 ring-primary" : "opacity-70"
+                      }`}
                   >
                     <Image
                       src={thumbImage || "/placeholder.svg"}
@@ -227,12 +226,12 @@ export function LuxuryCollection() {
             </div>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-secondary hover:text-secondary-foreground">
                 <Link href={`/car/${carSlug}`} className="w-full h-full flex items-center">
                   Book a test drive
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white/20 hover:bg-white/10">
+              <Button size="lg" variant="outline" className="bg-secondary text-secondary-foreground border-white/20 hover:bg-primary hover:text-primary-foreground">
                 <Link href={`/car/${carSlug}`} className="w-full h-full flex items-center">
                   View details
                 </Link>
