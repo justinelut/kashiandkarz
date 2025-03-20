@@ -612,9 +612,9 @@ function CarCard({ car }: { car: any }) {
 						<div className="text-lg font-bold flex items-center gap-1">
 							{car.pricing_payments
 								? formatCurrency(
-										car.pricing_payments.selling_price,
-										car.pricing_payments.currency,
-								  )
+									car.pricing_payments.selling_price,
+									car.pricing_payments.currency,
+								)
 								: "Price on request"}
 							{car.pricing_payments?.negotiable === "yes" && (
 								<Percent className="h-3 w-3 text-green-600" />
@@ -727,32 +727,32 @@ export default function StockCarsPage() {
 	}, [filters]);
 
 	return (
-		<div className="min-h-screen bg-gray-100">
-			<div className="container mx-auto px-4 py-8">
+		<div className="min-h-screen bg-gray-50">
+			<div className="container mx-auto px-3 py-6 sm:px-4 sm:py-8">
 				{/* Search input */}
-				<div className="mb-6 relative">
+				<div className="mb-6 max-w-md mt-16">
 					<div className="relative">
-						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+						<Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground opacity-70" />
 						<Input
 							placeholder="Search by make, model or keyword"
-							className="pl-10"
+							className="h-9 rounded-md pl-8 text-sm shadow-sm"
 							value={searchQuery}
 							onChange={handleSearchChange}
 						/>
 					</div>
 				</div>
 
-				<div className="mb-6 flex items-center justify-between">
-					<div className="flex items-center gap-3">
+				<div className="mb-4 flex items-center justify-between">
+					<div className="flex items-center gap-2">
 						{isMobile ? (
 							<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 								<DialogTrigger asChild>
-									<Button variant="outline" size="icon">
-										<Filter className="h-4 w-4" />
+									<Button variant="outline" size="sm" className="h-8 w-8 p-0">
+										<Filter className="h-3.5 w-3.5" />
 									</Button>
 								</DialogTrigger>
 								<DialogContent className="max-h-[90vh] overflow-auto p-0 sm:max-w-[350px]">
-									<DialogHeader className="p-4 pb-0">
+									<DialogHeader className="p-3 pb-0">
 										<DialogTitle>Filters</DialogTitle>
 									</DialogHeader>
 									<FilterContent
@@ -765,24 +765,25 @@ export default function StockCarsPage() {
 						) : (
 							<Button
 								variant="outline"
-								size="icon"
+								size="sm"
+								className="h-8 w-8 p-0"
 								onClick={() => setIsFiltersOpen(!isFiltersOpen)}
 							>
-								<Filter className="h-4 w-4" />
+								<Filter className="h-3.5 w-3.5" />
 							</Button>
 						)}
-						<h1 className="text-xl font-bold">
-							{pagination.total} Cars Available Now
+						<h1 className="text-lg font-medium sm:text-xl">
+							{pagination.total} Cars Available
 						</h1>
 					</div>
 
 					{/* Active filters display */}
-					<div className="hidden md:flex flex-wrap gap-2">
+					<div className="hidden md:flex flex-wrap gap-1.5">
 						{filters.condition?.map((condition) => (
 							<Badge
 								key={condition}
 								variant="outline"
-								className="flex items-center gap-1"
+								className="flex h-6 items-center gap-1 px-2 text-xs"
 							>
 								{condition === "new" ? "New" : "Used"}
 								<button
@@ -800,7 +801,11 @@ export default function StockCarsPage() {
 							</Badge>
 						))}
 						{filters.makes?.map((make) => (
-							<Badge key={make} variant="outline" className="flex items-center gap-1">
+							<Badge
+								key={make}
+								variant="outline"
+								className="flex h-6 items-center gap-1 px-2 text-xs"
+							>
 								{make}
 								<button
 									className="ml-1 rounded-full hover:bg-gray-200 p-0.5"
@@ -814,13 +819,13 @@ export default function StockCarsPage() {
 					</div>
 				</div>
 
-				<div className="flex gap-6">
+				<div className="flex gap-4">
 					{!isMobile && (
 						<AnimatePresence initial={false}>
 							{isFiltersOpen && (
 								<motion.div
 									initial={{ width: 0, opacity: 0 }}
-									animate={{ width: 300, opacity: 1 }}
+									animate={{ width: 280, opacity: 1 }}
 									exit={{ width: 0, opacity: 0 }}
 									transition={{ duration: 0.3 }}
 									className="sticky top-4 h-[calc(100vh-100px)] overflow-hidden rounded-lg bg-white shadow-sm"
@@ -841,19 +846,18 @@ export default function StockCarsPage() {
 							<motion.div
 								layout
 								className={cn(
-									"grid gap-4",
+									"grid gap-3",
 									"sm:grid-cols-2",
-									isFiltersOpen ? "lg:grid-cols-3" : "lg:grid-cols-4",
+									isFiltersOpen ? "lg:grid-cols-2 xl:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"
 								)}
 							>
 								{isLoading && cars.length === 0
 									? // Show skeletons while loading initial data
-									  Array(8)
-											.fill(0)
-											.map((_, index) => <CarCardSkeleton key={index} />)
+									Array(8)
+										.fill(0)
+										.map((_, index) => <CarCardSkeleton key={index} />)
 									: // Show actual car cards
-									  cars.map((car) => <CarCard key={car.$id} car={car} />)}
-
+									cars.map((car) => <CarCard key={car.$id} car={car} />)}
 								{/* Show loading skeletons at the end when loading more */}
 								{isLoading &&
 									cars.length > 0 &&
@@ -864,17 +868,20 @@ export default function StockCarsPage() {
 						</LayoutGroup>
 
 						{/* Pagination / Load More */}
-						<div className="mt-8 flex flex-col items-center justify-center gap-4">
+						<div className="mt-6 flex flex-col items-center justify-center gap-3">
 							{pagination.hasMore && (
-								<Button onClick={handleLoadMore} disabled={isLoading} className="px-8">
+								<Button
+									onClick={handleLoadMore}
+									disabled={isLoading}
+									className="h-9 px-6 text-sm"
+								>
 									{isLoading ? "Loading..." : "Load More"}
 								</Button>
 							)}
-
 							{!isLoading && cars.length === 0 && (
-								<div className="text-center py-12">
-									<h3 className="text-xl font-semibold mb-2">No cars found</h3>
-									<p className="text-muted-foreground">
+								<div className="text-center py-8">
+									<h3 className="text-lg font-semibold mb-1">No cars found</h3>
+									<p className="text-sm text-muted-foreground">
 										Try adjusting your filters to see more results
 									</p>
 								</div>
