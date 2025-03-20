@@ -313,7 +313,7 @@ export function PerformanceSportsCars() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Button className="bg-red-600 hover:bg-red-700 text-white">Book track day</Button>
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+              <Button variant="outline" className="border-white/20 text-primary hover:bg-white/10 hover:text-white">
                 Learn more
               </Button>
             </div>
