@@ -140,8 +140,8 @@ export function HeroSection({ bigDeal }: HeroSectionProps) {
       </div>
 
       {/* Floating Search Panel */}
-      <div className="absolute bottom-0 left-1/2 w-full max-w-5xl -translate-x-1/2 translate-y-1/2 transform px-4 md:px-6">
-        <div className="rounded-xl bg-white p-2 shadow-2xl transition-all duration-300 ease-in-out md:p-4">
+      <div className="relative bottom-0 left-1/2 w-full max-w-5xl -translate-x-1/2 translate-y-1/2 transform p-6 md:px-6">
+        <div className="rounded-xl bg-white p-2 shadow-md transition-all duration-300 ease-in-out md:p-4">
           <div className="flex flex-col gap-2 md:gap-4">
             <div className="relative flex flex-col items-center gap-2 md:flex-row md:gap-4">
               <div className="group relative w-full">
@@ -214,7 +214,7 @@ export function HeroSection({ bigDeal }: HeroSectionProps) {
       </div>
 
       {/* Quick Actions Panel */}
-      <div className="container relative z-10 mx-auto mt-24 px-4 py-8 md:px-6 lg:px-8">
+      <div className="container z-10 mx-auto mt-24 px-4 py-8 md:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Link href="/sell" className="group rounded-xl bg-white p-6 text-center shadow-md transition-all duration-300 hover:shadow-xl">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white">

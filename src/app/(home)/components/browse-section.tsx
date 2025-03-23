@@ -102,9 +102,9 @@ export function BrowseSection() {
 						</div>
 						<div>
 							<h3 className="text-lg font-semibold">Quick Browse</h3>
-							<p className="text-sm text-muted-foreground">
+							{/* <p className="text-sm text-muted-foreground">
 								Find exactly what you're looking for
-							</p>
+							</p> */}
 						</div>
 					</motion.div>
 

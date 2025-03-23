@@ -229,10 +229,10 @@ export function Header() {
   const { scrollY } = useScroll()
   const { user, isSignedIn } = useAuth()
   const [activeTab, setActiveTab] = useState("browse")
-  
+
   // Transform blur based on scroll position
   const headerBlur = useTransform(scrollY, [0, 100], [0, 8])
-  
+
   // Update isScrolled state based on scroll position
   useEffect(() => {
     const unsubscribe = scrollY.onChange((latest) => {
@@ -249,16 +249,16 @@ export function Header() {
 
   return (
     <div className="fixed top-0 z-50 w-full">
-      <motion.div 
+      <motion.div
         initial={{ y: 0 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3 }}
       >
         {/* Background layer with dynamic opacity */}
         <div className="absolute inset-0 border-b backdrop-blur-md">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
-            animate={{ 
+            animate={{
               opacity: 1,
               backgroundColor: isScrolled ? "rgba(255, 255, 255, 0.95)" : "rgba(255, 255, 255, 0.8)",
               backdropFilter: `blur(${headerBlur.get()}px)`,
@@ -273,9 +273,9 @@ export function Header() {
           <div className="flex items-center gap-4">
             <Sheet>
               <SheetTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="md:hidden"
                 >
                   <Menu className="h-6 w-6" />
@@ -291,19 +291,20 @@ export function Header() {
                       </Link>
                     </SheetTitle>
                   </SheetHeader>
-                  
+
                   {/* Mobile search */}
                   <div className="px-4 py-3 border-b">
                     <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        type="search" 
-                        placeholder="Search cars, makes or models..." 
+                      {/* Center the icon vertically */}
+                      <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search cars, makes or models..."
                         className="pl-8 bg-muted/50"
                       />
                     </div>
                   </div>
-                  
+
                   {/* Tabs navigation for mobile */}
                   <Tabs defaultValue="browse" className="flex-1 overflow-hidden" onValueChange={setActiveTab}>
                     <div className="border-b">
@@ -316,7 +317,7 @@ export function Header() {
                         </TabsTrigger>
                       </TabsList>
                     </div>
-                    
+
                     <div className="flex-1 overflow-auto">
                       <TabsContent value="browse" className="h-full overflow-auto mt-0 p-0">
                         <div className="p-4 space-y-6">
@@ -327,11 +328,11 @@ export function Header() {
                                 <h3 className="text-lg font-semibold">{item.title}</h3>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
-                                {item.content.flatMap(section => 
+                                {item.content.flatMap(section =>
                                   section.items.slice(0, 4).map(subItem => (
-                                    <Link 
-                                      key={subItem.title} 
-                                      href={subItem.href} 
+                                    <Link
+                                      key={subItem.title}
+                                      href={subItem.href}
                                       className="flex items-center rounded-md px-3 py-2 text-sm bg-muted/50 hover:bg-muted hover:text-primary transition-colors"
                                     >
                                       {subItem.title}
@@ -339,8 +340,8 @@ export function Header() {
                                   ))
                                 )}
                               </div>
-                              <Link 
-                                href={item.href} 
+                              <Link
+                                href={item.href}
                                 className="text-sm text-primary font-medium inline-flex mt-1"
                               >
                                 View all {item.title.toLowerCase()} options
@@ -350,7 +351,7 @@ export function Header() {
                           ))}
                         </div>
                       </TabsContent>
-                      
+
                       <TabsContent value="account" className="h-full overflow-auto mt-0 p-0">
                         <div className="p-4 space-y-6">
                           {isSignedIn ? (
@@ -365,7 +366,7 @@ export function Header() {
                                   <p className="text-sm text-muted-foreground">{user?.email || ""}</p>
                                 </div>
                               </div>
-                              
+
                               <div className="space-y-1">
                                 <h3 className="text-md font-medium mb-2">Your Account</h3>
                                 <Link href="/profile" className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors">
@@ -399,7 +400,7 @@ export function Header() {
                                   </div>
                                 </Link>
                               </div>
-                              
+
                               <div className="space-y-1">
                                 <h3 className="text-md font-medium mb-2">Settings</h3>
                                 <Link href="/settings" className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors">
@@ -407,7 +408,7 @@ export function Header() {
                                   <p className="font-medium">Account Settings</p>
                                 </Link>
                               </div>
-                              
+
                               <Button variant="destructive" className="w-full mt-6">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 Sign Out
@@ -418,7 +419,7 @@ export function Header() {
                               <div className="bg-muted/30 rounded-lg p-4 text-center space-y-4">
                                 <h3 className="text-lg font-semibold">Welcome to Kashi&Karz</h3>
                                 <p className="text-muted-foreground">Sign in to save your favorite cars, get personalized recommendations, and more.</p>
-                                
+
                                 <div className="grid gap-3 pt-2">
                                   <Link href="/sign-in">
                                     <Button className="w-full" size="lg">
@@ -442,7 +443,7 @@ export function Header() {
                                   </Link>
                                 </div>
                               </div>
-                              
+
                               <div className="space-y-4">
                                 <h3 className="text-md font-medium">Quick Links</h3>
                                 <div className="grid grid-cols-2 gap-3">
@@ -495,7 +496,7 @@ export function Header() {
               <NavigationMenuList>
                 {navItems.map((item) => (
                   <NavigationMenuItem key={item.title}>
-                    <NavigationMenuTrigger 
+                    <NavigationMenuTrigger
                       className="transition-colors duration-300 data-[state=open]:bg-transparent"
                     >
                       {item.title}
@@ -531,18 +532,18 @@ export function Header() {
               transition={{ duration: 0.3 }}
             >
               <div className="hidden md:flex md:gap-2">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="transition-colors duration-300 relative"
                 >
-                  <Heart className="h-5 w-5" />
-                  {isSignedIn && (
+                  {/* <Heart className="h-5 w-5" /> */}
+                  {/* {isSignedIn && (
                     <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0">2</Badge>
-                  )}
+                  )} */}
                   <span className="sr-only">Favorites</span>
                 </Button>
-                
+
                 {isSignedIn ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -604,8 +605,8 @@ export function Header() {
                       </Button>
                     </Link>
                     <Link href="/sign-in">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         className="transition-colors duration-300 lg:hidden"
                       >
@@ -616,7 +617,7 @@ export function Header() {
                   </div>
                 )}
               </div>
-              
+
               {/* Mobile Quick Actions */}
               <div className="flex gap-2 md:hidden">
                 <Link href="/search">
@@ -624,14 +625,14 @@ export function Header() {
                     <Search className="h-5 w-5" />
                   </Button>
                 </Link>
-                <Link href={isSignedIn ? "/saved" : "/sign-in"}>
+                {/* <Link href={isSignedIn ? "/saved" : "/sign-in"}>
                   <Button variant="ghost" size="icon" className="transition-colors duration-300 relative">
                     <Heart className="h-5 w-5" />
                     {isSignedIn && (
                       <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0">2</Badge>
                     )}
                   </Button>
-                </Link>
+                </Link> */}
                 {isSignedIn ? (
                   <Button variant="ghost" size="icon" className="transition-colors duration-300">
                     <Avatar className="h-8 w-8">

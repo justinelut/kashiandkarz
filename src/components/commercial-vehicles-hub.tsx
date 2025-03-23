@@ -61,7 +61,7 @@ export function CommercialVehiclesHub({ vehicles = [] }: CommercialVehiclesHubPr
   }
 
   return (
-    <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
+    <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div>
@@ -95,7 +95,7 @@ export function CommercialVehiclesHub({ vehicles = [] }: CommercialVehiclesHubPr
                   <TabsTrigger
                     key={type.value}
                     value={type.value}
-                    className="justify-start data-[state=active]:bg-slate-700 data-[state=active]:text-white py-3"
+                    className="justify-start data-[state=active]:bg-[#1c1c1c] data-[state=active]:text-white py-3"
                   >
                     {type.name}
                   </TabsTrigger>
@@ -165,12 +165,12 @@ export function CommercialVehiclesHub({ vehicles = [] }: CommercialVehiclesHubPr
               </Select>
             </div>
 
-            <div className="p-4 bg-slate-700 text-white rounded-lg">
+            <div className="p-4 bg-[#1c1c1c] text-white rounded-lg">
               <h3 className="font-medium mb-2">Business Leasing Specialist</h3>
-              <p className="text-sm text-slate-200 mb-4">
+              <p className="text-sm text-gray-50 mb-4">
                 Get expert advice on the best commercial vehicle for your business needs.
               </p>
-              <Button className="w-full bg-white text-slate-700 hover:bg-slate-100">Contact specialist</Button>
+              <Button className="w-full bg-white text-primary hover:bg-slate-200">Contact specialist</Button>
             </div>
           </div>
 
@@ -272,7 +272,7 @@ export function CommercialVehiclesHub({ vehicles = [] }: CommercialVehiclesHubPr
           </div>
         </div>
 
-        <div className="mt-12 bg-slate-800 rounded-xl overflow-hidden">
+        <div className="mt-12 bg-[#1c1c1c] rounded-xl overflow-hidden">
           <div className="grid md:grid-cols-2 items-center">
             <div className="p-8 md:p-12 text-white">
               <h3 className="text-2xl font-bold mb-4">Fleet Solutions for Businesses</h3>

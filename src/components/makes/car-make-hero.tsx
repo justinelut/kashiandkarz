@@ -6,7 +6,7 @@ interface CarMakeHeroProps {
 
 export function CarMakeHero({ carMake }: CarMakeHeroProps) {
   return (
-    <div className="bg-gradient-to-r from-gray-100 to-gray-200 py-12">
+    <div className="bg-gradient-to-r from-gray-100 to-gray-200 py-12 my-6">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="w-32 h-32 rounded-full bg-white shadow-lg flex items-center justify-center p-4 border border-gray-200">
