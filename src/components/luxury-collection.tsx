@@ -88,13 +88,13 @@ export function LuxuryCollection() {
 
 	if (isLoading) {
 		return (
-			<section className="py-24 bg-gradient-to-b from-[#1c1c1c] to-[#121212] text-white overflow-hidden">
+			<section className="py-24 bg-gray-50 text-gray-800 overflow-hidden">
 				<div className="container px-4 md:px-6 mx-auto max-w-7xl">
 					<div className="mb-12 text-center md:text-left">
-						<h2 className="text-5xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
+						<h2 className="text-5xl font-bold tracking-tight mb-4 text-gray-900">
 							Luxury Collection
 						</h2>
-						<p className="text-white/70 max-w-2xl mx-auto md:mx-0 text-lg">
+						<p className="text-gray-600 max-w-2xl mx-auto md:mx-0 text-lg">
 							Discover our handpicked selection of the world's most prestigious and
 							high-performance vehicles.
 						</p>
@@ -109,20 +109,22 @@ export function LuxuryCollection() {
 
 	if (isError || !data || data.length === 0) {
 		return (
-			<section className="py-24 bg-gradient-to-b from-[#1c1c1c] to-[#121212] text-white overflow-hidden">
+			<section className="py-24 bg-gray-50 text-gray-800 overflow-hidden">
 				<div className="container px-4 md:px-6 mx-auto max-w-7xl">
 					<div className="mb-12 text-center md:text-left">
-						<h2 className="text-5xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
+						<h2 className="text-5xl font-bold tracking-tight mb-4 text-gray-900">
 							Luxury Collection
 						</h2>
-						<p className="text-white/70 max-w-2xl mx-auto md:mx-0 text-lg">
+						<p className="text-gray-600 max-w-2xl mx-auto md:mx-0 text-lg">
 							Discover our handpicked selection of the world's most prestigious and
 							high-performance vehicles.
 						</p>
 					</div>
 					<div className="flex flex-col items-center justify-center h-96 text-center">
-						<p className="text-xl mb-4">Our luxury collection is being updated.</p>
-						<p className="text-white/70">
+						<p className="text-xl mb-4 text-gray-800">
+							Our luxury collection is being updated.
+						</p>
+						<p className="text-gray-600">
 							Please check back soon to see our premium vehicles.
 						</p>
 					</div>
@@ -151,16 +153,17 @@ export function LuxuryCollection() {
 	const isBigDeal = activeCar.big_deal || false;
 
 	return (
-		<section className="py-8 md:py-20 bg-gradient-to-b from-[#101010] via-[#1c1c1c] to-[#121212] text-white overflow-hidden">
+		<section className="py-20 bg-gray-50 text-gray-900 overflow-hidden">
 			<div className="container px-4 md:px-6 mx-auto max-w-7xl">
 				<div className="mb-16 text-center md:text-left">
-					<div className="inline-block mb-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+					{/*					<div className="inline-block mb-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
 						Exclusive Collection
 					</div>
-					<h2 className="text-5xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
+          */}
+					<h2 className="text-5xl font-bold tracking-tight mb-4 text-gray-900">
 						Luxury Collection
 					</h2>
-					<p className="text-white/70 max-w-2xl mx-auto md:mx-0 text-lg">
+					<p className="text-gray-600 max-w-2xl mx-auto md:mx-0 text-lg">
 						Discover our handpicked selection of the world's most prestigious and
 						high-performance vehicles.
 					</p>
@@ -169,7 +172,7 @@ export function LuxuryCollection() {
 				<div className="grid lg:grid-cols-2 gap-16 items-center">
 					<div className="space-y-8 order-2 lg:order-1">
 						<motion.div
-							className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 group"
+							className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border border-gray-200 group"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.5 }}
@@ -183,11 +186,11 @@ export function LuxuryCollection() {
 								className="object-cover transition-transform duration-700 group-hover:scale-105"
 								priority
 							/>
-							<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+							<div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
 
 							{isHovered && (
 								<motion.div
-									className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+									className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
 									initial={{ opacity: 0 }}
 									animate={{ opacity: 1 }}
 								>
@@ -198,7 +201,7 @@ export function LuxuryCollection() {
 							)}
 
 							{isBigDeal && (
-								<div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+								<div className="absolute top-4 left-4 bg-primary text-white px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
 									<BadgeCheck className="h-4 w-4" />
 									<span className="text-sm font-medium">Special Offer</span>
 								</div>
@@ -219,7 +222,7 @@ export function LuxuryCollection() {
 											className={`relative flex-shrink-0 w-28 h-20 rounded-xl overflow-hidden snap-start transition-all duration-300 ${
 												index === activeIndex
 													? "ring-2 ring-primary scale-105 shadow-xl z-10"
-													: "opacity-60 hover:opacity-80 hover:scale-102"
+													: "opacity-80 hover:opacity-100 hover:scale-102 border border-gray-200"
 											}`}
 										>
 											<Image
@@ -229,7 +232,7 @@ export function LuxuryCollection() {
 												className="object-cover"
 											/>
 											{car.big_deal && (
-												<div className="absolute bottom-1.5 right-1.5 bg-primary h-3 w-3 rounded-full shadow-glow" />
+												<div className="absolute bottom-1.5 right-1.5 bg-primary h-3 w-3 rounded-full shadow-lg" />
 											)}
 										</button>
 									);
@@ -239,13 +242,13 @@ export function LuxuryCollection() {
 							<div className="absolute -right-2 -left-2 top-1/2 transform -translate-y-1/2 flex justify-between pointer-events-none">
 								<button
 									onClick={handlePrev}
-									className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-auto hover:bg-black/80 transition-colors"
+									className="h-8 w-8 rounded-full bg-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-gray-100 transition-colors border border-gray-200 text-gray-700"
 								>
 									<ChevronLeft className="h-5 w-5" />
 								</button>
 								<button
 									onClick={handleNext}
-									className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-auto hover:bg-black/80 transition-colors"
+									className="h-8 w-8 rounded-full bg-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-gray-100 transition-colors border border-gray-200 text-gray-700"
 								>
 									<ChevronRight className="h-5 w-5" />
 								</button>
@@ -260,7 +263,7 @@ export function LuxuryCollection() {
 						transition={{ duration: 0.5, delay: 0.2 }}
 					>
 						<div>
-							<h3 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/90">
+							<h3 className="text-4xl font-bold text-gray-900">
 								{carMake} {carModel}
 							</h3>
 							<div className="flex items-center gap-1.5 mt-3">
@@ -269,28 +272,23 @@ export function LuxuryCollection() {
 									.map((_, i) => (
 										<Star
 											key={i}
-											className={`h-5 w-5 ${i < 5 ? "fill-yellow-400 text-yellow-400" : "text-gray-600"}`}
+											className={`h-5 w-5 ${i < 5 ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`}
 										/>
 									))}
-								<span className="text-white/60 text-sm ml-2">5.0 (24 reviews)</span>
+								<span className="text-gray-500 text-sm ml-2">5.0 (24 reviews)</span>
 							</div>
 						</div>
 
 						<div className="flex items-center gap-3">
-							<p className="text-3xl font-bold">{carPrice}</p>
+							<p className="text-3xl font-bold text-gray-900">{carPrice}</p>
 							{isBigDeal && (
-								<Badge
-									variant="outline"
-									className="border-primary text-primary py-1 bg-primary/5"
-								>
-									Special Offer
-								</Badge>
+								<Badge className="bg-primary/10 text-primary py-1">Special Offer</Badge>
 							)}
 						</div>
 
 						<div className="relative">
-							<div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary/80 to-primary/10 rounded-full"></div>
-							<p className="text-white/80 text-lg leading-relaxed pl-6">
+							<div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-full"></div>
+							<p className="text-gray-700 text-lg leading-relaxed pl-6">
 								{carDescription}
 							</p>
 						</div>
@@ -299,15 +297,15 @@ export function LuxuryCollection() {
 							{carFeatures.map((feature, index) => (
 								<div key={index} className="flex items-center gap-3 group">
 									<div className="h-2.5 w-2.5 rounded-full bg-primary group-hover:scale-125 transition-transform duration-300" />
-									<span className="text-white/90">{feature}</span>
+									<span className="text-gray-800">{feature}</span>
 								</div>
 							))}
 						</div>
 
 						<div className="pt-6 space-y-4">
-							{/*							<Button
+							<Button
 								size="lg"
-								className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300 hover:translate-y-[-2px]"
+								className="w-full md:w-auto bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300 hover:translate-y-[-2px]"
 							>
 								<Link
 									href={`/car/${carSlug}`}
@@ -317,12 +315,12 @@ export function LuxuryCollection() {
 									<Calendar className="h-4 w-4 ml-1" />
 								</Link>
 							</Button>
-              */}
+
 							<div className="flex flex-col md:flex-row gap-4">
 								<Button
 									size="lg"
 									variant="outline"
-									className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:border-white/30 transition-all duration-300 flex-1"
+									className="bg-transparent text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all duration-300 flex-1"
 								>
 									<Link
 										href={`/car/${carSlug}`}
@@ -336,7 +334,7 @@ export function LuxuryCollection() {
 								<Button
 									size="lg"
 									variant="outline"
-									className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:border-white/30 transition-all duration-300 flex-1"
+									className="bg-transparent text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all duration-300 flex-1"
 								>
 									<Link
 										href={`/car/${carSlug}`}
@@ -359,11 +357,10 @@ export function LuxuryCollection() {
 						}}
 						className="absolute -left-4 top-1/2 transform -translate-y-1/2 hidden lg:flex z-10"
 					>
-						<div className="bg-white/10 backdrop-blur-sm p-2 rounded-full cursor-pointer hover:bg-white/20 transition-colors">
+						<div className="bg-white p-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors border border-gray-200 shadow-md text-gray-700">
 							<ChevronLeft className="h-6 w-6" />
 						</div>
 					</button>
-
 					<button
 						onClick={() => {
 							if (carousel.current) {
@@ -372,13 +369,12 @@ export function LuxuryCollection() {
 						}}
 						className="absolute -right-4 top-1/2 transform -translate-y-1/2 hidden lg:flex z-10"
 					>
-						<div className="bg-white/10 backdrop-blur-sm p-2 rounded-full cursor-pointer hover:bg-white/20 transition-colors">
+						<div className="bg-white p-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors border border-gray-200 shadow-md text-gray-700">
 							<ChevronRight className="h-6 w-6" />
 						</div>
 					</button>
-
 					<div className="flex justify-between items-center mb-8">
-						<h3 className="text-2xl font-bold text-center md:text-left">
+						<h3 className="text-2xl font-bold text-center md:text-left text-gray-900">
 							More Exclusive Vehicles
 						</h3>
 						<Link
@@ -389,7 +385,6 @@ export function LuxuryCollection() {
 							<ArrowRight className="h-4 w-4 ml-1" />
 						</Link>
 					</div>
-
 					<motion.div
 						ref={carousel}
 						className="cursor-grab overflow-hidden"
@@ -416,29 +411,26 @@ export function LuxuryCollection() {
 								return (
 									<motion.div
 										key={car.$id}
-										className="min-w-[320px] md:min-w-[400px] bg-white/5 rounded-xl p-6 backdrop-blur-md border border-white/5 hover:border-white/10 transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 group"
+										className="min-w-[320px] md:min-w-[400px] bg-white rounded-xl p-6 border border-gray-200 hover:border-gray-300 transition-all duration-500 hover:shadow-xl group"
 										whileHover={{ y: -5 }}
 										transition={{ type: "spring", stiffness: 300 }}
 									>
 										<div className="flex justify-between items-start mb-4">
 											<div>
-												<h4 className="font-bold text-lg">{cardMake}</h4>
-												<p className="text-white/70">{cardModel}</p>
+												<h4 className="font-bold text-lg text-gray-900">{cardMake}</h4>
+												<p className="text-gray-600">{cardModel}</p>
 											</div>
 											<div className="text-right">
-												<p className="font-semibold">{cardPrice}</p>
+												<p className="font-semibold text-gray-900">{cardPrice}</p>
 												{isCardBigDeal && (
-													<Badge
-														variant="outline"
-														className="mt-1 border-primary/50 text-primary text-xs"
-													>
+													<Badge className="mt-1 bg-primary/10 text-primary text-xs">
 														Special Offer
 													</Badge>
 												)}
 											</div>
 										</div>
 
-										<div className="relative h-52 rounded-lg overflow-hidden mb-5 group-hover:shadow-lg transition-all duration-500">
+										<div className="relative h-52 rounded-lg overflow-hidden mb-5 group-hover:shadow-lg transition-all duration-500 border border-gray-100">
 											<Image
 												src={cardImage || "/placeholder.svg"}
 												alt={`${cardMake} ${cardModel}`}
@@ -446,7 +438,7 @@ export function LuxuryCollection() {
 												className="object-cover transition-transform duration-700 group-hover:scale-105"
 											/>
 											{isCardBigDeal && (
-												<div className="absolute top-2 right-2 bg-primary/90 backdrop-blur-sm text-primary-foreground px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+												<div className="absolute top-2 right-2 bg-primary text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
 													<BadgeCheck className="h-3 w-3" />
 													<span className="text-xs font-medium">Special</span>
 												</div>
@@ -455,7 +447,7 @@ export function LuxuryCollection() {
 
 										<Button
 											variant="ghost"
-											className="w-full justify-between group hover:bg-white/5 transition-colors duration-300"
+											className="w-full justify-between group hover:bg-gray-100 transition-colors duration-300 text-gray-800"
 										>
 											<Link
 												href={`/car/${cardSlug}`}
@@ -470,12 +462,11 @@ export function LuxuryCollection() {
 							})}
 						</motion.div>
 					</motion.div>
-
-					<p className="text-white/50 text-sm mt-6 text-center flex items-center justify-center gap-2">
+					{/*	<p className="text-gray-500 text-sm mt-6 text-center flex items-center justify-center gap-2">
 						<MousePointer className="h-4 w-4" />
 						Drag to explore more luxury vehicles
 					</p>
-
+          */}
 					<div className="text-center mt-8">
 						<Link
 							href="/luxury-collection"
