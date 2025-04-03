@@ -1,38 +1,66 @@
 import { HeroSection } from "@/components/hero-section";
 import { TrustpilotReviews } from "@/components/trustpilot-reviews";
+import { CarSearch } from "@/components/car-search";
+import { FeaturedCars } from "@/components/featured-cars";
+import { getBigDeals, getCarFeatures } from "@/lib/actions";
 import { BigDeals } from "./components/big-deals";
 import { BrowseSection } from "./components/browse-section";
 import { HowItWorks } from "./components/how-it-works";
 import { PerformanceSportsCars } from "@/components/performance-sports-cars";
+
+import {
+	getEcoFriendlyCars,
+	getFamilyCars,
+	getCommercialVehicles,
+	getPerformanceSportsCars,
+	getBudgetFriendlyFinds,
+	getVintageClassicCollection,
+} from "@/lib/homepage-actions";
 import { FamilyCarsShowcase } from "@/components/family-cars-showcase";
 import { EcoFriendlyShowcase } from "@/components/eco-friendly-showcase";
 import { Newsletter } from "@/components/newsletter";
-import { PopularBrands } from "@/components/popular-brands";
-import { CustomerSuccessStories } from "@/components/customer-success-stories";
-import { LuxuryCollection } from "@/components/luxury-collection";
-import { CommercialVehiclesHub } from "@/components/commercial-vehicles-hub";
-import { FeaturedCars } from "@/components/featured-cars";
-
-import { getBigDeals } from "@/lib/actions";
 import { getEcoFriendlyVehicles } from "@/lib/eco-friendly-action";
 import { getPopularCarMakes } from "@/lib/car-makes";
-import { getSuccessStoryTestimonials, getTestimonials } from "@/lib/testimonials-actions";
+import { PopularBrands } from "@/components/popular-brands";
+import {
+	getSuccessStoryTestimonials,
+	getTestimonials,
+} from "@/lib/testimonials-actions";
+import { CustomerSuccessStories } from "@/components/customer-success-stories";
+import { LuxuryCollection } from "@/components/luxury-collection";
+import { BudgetFriendlyFinds } from "@/components/budget-friendly-finds";
+import { CommercialVehiclesHub } from "@/components/commercial-vehicles-hub";
 import { getFeaturedNewCars } from "@/lib/featured-cars-actions";
-import { getCommercialVehicles, getPerformanceSportsCars } from "@/lib/homepage-actions";
+import { getBudgetFriendlyVehicles } from "@/lib/budget-friendly-actions";
 
 export default async function Home() {
+	// const allcarfeatures = await getCarFeatures();
 	const bigDealsResponse = await getBigDeals();
 	const bigDeals = bigDealsResponse.success ? bigDealsResponse.data : [];
 	const featuredBigDeal = bigDeals.length > 0 ? bigDeals[0] : null;
-
+	// const ecoFriendlyCarsResponse = await getEcoFriendlyCars();
+	// const familyCarsResponse = await getFamilyCars();
 	const commercialVehiclesResponse = await getCommercialVehicles();
 	const performanceSportsCarsResponse = await getPerformanceSportsCars();
+	// const budgetFriendlyFindsResponse = await getBudgetFriendlyFinds();
+	// const vintageClassicCollectionResponse = await getVintageClassicCollection();
+
+	// const ecoFriendlyCars = ecoFriendlyCarsResponse.success
+	// 	? ecoFriendlyCarsResponse.data
+	// 	: [];
+	// const familyCars = familyCarsResponse.success ? familyCarsResponse.data : [];
 	const commercialVehicles = commercialVehiclesResponse.success
 		? commercialVehiclesResponse.data
 		: [];
 	const performanceSportsCars = performanceSportsCarsResponse.success
 		? performanceSportsCarsResponse.data
 		: [];
+	// const budgetFriendlyFinds = budgetFriendlyFindsResponse.success
+	// 	? budgetFriendlyFindsResponse.data
+	// 	: [];
+	// const vintageClassicCollection = vintageClassicCollectionResponse.success
+	// 	? vintageClassicCollectionResponse.data
+	// 	: [];
 
 	const ecoFriendlyResponse = await getEcoFriendlyVehicles(4);
 	const ecoFriendlyCars = ecoFriendlyResponse.success
@@ -49,6 +77,7 @@ export default async function Home() {
 		? testimonialsResponse.data
 		: [];
 
+	// Fetch success story testimonials for CustomerSuccessStories
 	const successStoriesResponse = await getSuccessStoryTestimonials(3);
 	const successStories = successStoriesResponse.success
 		? successStoriesResponse.data
@@ -59,35 +88,32 @@ export default async function Home() {
 		? featuredCarsResponse.data
 		: [];
 
+	// 		const budgetFriendlyResponse = await getBudgetFriendlyVehicles(6)
+	//   const budgetFriendlyCars = budgetFriendlyResponse.success ? budgetFriendlyResponse.data : []
+
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-			<main className="relative">
+		<div>
+			<main className="flex-1 pt-20">
 				<HeroSection bigDeal={featuredBigDeal} />
-				<div className="container mx-auto px-4 space-y-24 py-16 sm:px-6 lg:px-8">
+				{/* <CarSearch/> */}
+				<div className="container mx-auto py-10">
 					<BrowseSection />
 					<HowItWorks />
 					<BigDeals deals={bigDeals} />
-					
-					<div className="space-y-24">
-						<LuxuryCollection />
-						<PerformanceSportsCars cars={performanceSportsCars} />
-						<FamilyCarsShowcase />
-						<EcoFriendlyShowcase cars={ecoFriendlyCars} />
-					</div>
-
-					<div className="space-y-24 bg-white -mx-4 px-4 py-24 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-						<TrustpilotReviews testimonials={testimonials} />
-						<CustomerSuccessStories successStories={successStories} />
-					</div>
-
-					<div className="space-y-24">
-						<CommercialVehiclesHub vehicles={commercialVehicles} />
-						<PopularBrands brands={popularMakes} />
-						<FeaturedCars cars={featuredCars} />
-					</div>
-
-					<Newsletter />
 				</div>
+				<LuxuryCollection />
+				<PerformanceSportsCars cars={performanceSportsCars} />
+				<FamilyCarsShowcase />
+				<EcoFriendlyShowcase cars={ecoFriendlyCars} />
+				<TrustpilotReviews testimonials={testimonials} />
+				<CustomerSuccessStories successStories={successStories} />
+				{/* <BudgetFriendlyFinds cars={budgetFriendlyCars} /> */}
+				<CommercialVehiclesHub vehicles={commercialVehicles} />
+				<PopularBrands brands={popularMakes} />
+
+				<FeaturedCars cars={featuredCars} />
+				<Newsletter />
+				<FeaturedCars />
 			</main>
 		</div>
 	);
